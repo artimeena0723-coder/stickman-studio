@@ -647,11 +647,31 @@ async function renderPhase() {
   }
   step('render', 'done', `${nParts} parts`); bmCache.forEach(b => b.close()); bmCache.clear();
 }
-async function finalPhase() {
-  const P = S.P; if (P.finalDone && await fileExists('final.mp4')) return showFinal();
+function isQuotaErr(e) { return e && (e.name === 'QuotaExceededError' || /quota|storage|space/i.test(e.message || '')); }
+async function finalPhase(diskHandle) {
+  try { return await finalPhaseInner(diskHandle); }
+  catch (e) {
+    if (e instanceof Stop || !isQuotaErr(e)) throw e;
+    try { await (await opfs()).removeEntry('final.mp4'); } catch (x) { }
+    step('final', 'err', 'jagah khatam');
+    $('dlBox').innerHTML = window.showSaveFilePicker ? '<button id="btnFinalDisk2">💾 Final video seedha PC me save karo (app storage nahi lagegi)</button>' : '<div class="hint">Phone me jagah khaali karo (purani videos/apps hatao), phir ▶ Resume dabao — render dobara nahi hoga, sirf final jodna hoga.</div>';
+    const b = $('btnFinalDisk2'); if (b) b.onclick = finalToDisk; showTab('export');
+    throw new Fatal('Browser ki storage bhar gayi (final video jodte waqt). ' + (window.showSaveFilePicker ? 'Export tab me 💾 button dabao — video seedha PC folder me save hogi.' : 'Phone me 2-3 GB jagah khaali karke ▶ Resume dabao.'));
+  }
+}
+async function finalToDisk() {
+  if (!S.P) return; if (!window.showSaveFilePicker) return alert('Ye option sirf PC Chrome/Edge me hai');
+  if (!Object.keys(S.P.parts || {}).length) return alert('Pehle 🎞️ Render chalao');
+  const name = `${(S.P.sheet?.title || 'stickman_video').replace(/[^\w\u0900-\u097F]+/g, '_').slice(0, 40)}.mp4`;
+  let h; try { h = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: 'MP4 video', accept: { 'video/mp4': ['.mp4'] } }] }); } catch (e) { return; }
+  guard(async () => { try { await (await opfs()).removeEntry('final.mp4'); } catch (x) { } S.P.finalDone = 0; await finalPhase(h); });
+}
+async function finalPhaseInner(diskHandle) {
+  const P = S.P; if (!diskHandle && P.finalDone && await fileExists('final.mp4')) return showFinal();
   step('final', 'run', 'voice jod rahe hain', 0); const total = P.total, L = P.partLen, nParts = Math.ceil(total / L);
   const acodec = (await MB.canEncodeAudio('aac', { numberOfChannels: 2, sampleRate: 48000, bitrate: 192000 })) ? 'aac' : 'opus';
-  const root = await opfs(); const fh = await root.getFileHandle('final.mp4', { create: true }); const wr = await fh.createWritable();
+  const root = await opfs(); if (!diskHandle) { try { await root.removeEntry('final.mp4'); } catch (x) { } }
+  const wr = diskHandle ? await diskHandle.createWritable() : await (await root.getFileHandle('final.mp4', { create: true })).createWritable();
   const out = new MB.Output({ format: new MB.Mp4OutputFormat(), target: new MB.StreamTarget(wr, { chunked: true }) });
   const vsrc = new MB.EncodedVideoPacketSource('avc'); const asrc = new MB.AudioBufferSource({ codec: acodec, bitrate: 192000 });
   out.addVideoTrack(vsrc, { frameRate: P.fps }); out.addAudioTrack(asrc); await out.start();
@@ -677,6 +697,7 @@ async function finalPhase() {
     step('final', 'run', `${p + 1}/${nParts}`, (p + 1) / nParts * 0.95);
   }
   await feedTo(Infinity); await out.finalize();
+  if (diskHandle) { step('final', 'done', 'PC me save'); setProgress(100, '✅ Video PC me save ho gayi!'); log('✅ Final video aapke chune folder me save ho gayi: ' + diskHandle.name); $('dlBox').innerHTML = `<div class="hint">✅ ${esc(diskHandle.name)} save ho gayi. File Explorer me dekho.</div>`; showTab('export'); return; }
   P.finalDone = 1; await saveP(true); step('final', 'done', 'ready'); showFinal();
 }
 async function showFinal() {
@@ -811,6 +832,8 @@ $('btnRePrompt').onclick = () => { const P = S.P; if (!P?.scenes?.length) return
   guard(async () => { showTab('flow'); let n = 0; for (const s of P.scenes) if (!(s.prompt || '').trim() || s.prompt === s.text) { s.prompt = ''; n++; } if (!n) { if (!confirm('Saare scenes ke prompt bane hue hain. Sab dobara banau?')) return; P.scenes.forEach(s => s.prompt = ''); }
     if (!P.sheet) { step('plan', 'run', 'story samajh rahe hain', 0.1); await sheetPhase(P.scenes.map(s => s.text).join(' ')); }
     await promptsPhase(); step('plan', 'done', `${P.scenes.length} scenes`); await saveP(true); renderBoard(); log('✍️ Scene prompts ban gaye — ab 📋 se copy karo'); alert('✅ Prompts ban gaye. Ab 📋 se copy karke images banao.'); }); };
+$('btnFinalDisk').onclick = finalToDisk;
+if (!window.showSaveFilePicker) $('btnFinalDisk').style.display = 'none';
 $('btnZip').onclick = async () => { const fs = await pick('.zip,application/zip,application/x-zip-compressed,application/octet-stream', true); if (fs?.length) importImages(fs); };
 $('btnImport').onclick = async () => { const fs = await pick('image/*', true); if (fs?.length) importImages(fs); };
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
