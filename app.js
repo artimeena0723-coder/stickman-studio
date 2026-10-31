@@ -155,11 +155,16 @@ const gen = (model, key, body) => post(`${API}/models/${model}:generateContent`,
 const partsOf = j => j?.candidates?.[0]?.content?.parts || [];
 const textOf = j => partsOf(j).filter(p => !p.thought).map(p => p.text || '').join('');
 function parseJSON(t) { t = t.trim().replace(/^```(?:json)?/, '').replace(/```$/, ''); try { return JSON.parse(t); } catch (e) { const m = t.match(/[\[{][\s\S]*[\]}]/); return JSON.parse(m ? m[0] : t); } }
+const TEXT_CHAIN = ['gemini-3.8-flash', 'gemini-3.8-flash-lite', 'gemini-3.1-flash', 'gemini-3.1-flash-lite'];
 async function askJSON(label, parts, maxTok = 32768) {
-  return withKeys(label, async key => {
-    const j = await gen(st('mText').trim(), key, { contents: [{ role: 'user', parts: typeof parts === 'function' ? await parts(key) : parts }], generationConfig: { responseMimeType: 'application/json', maxOutputTokens: maxTok, temperature: 0.7 } });
+  const first = st('mText').trim(); const chain = [first, ...TEXT_CHAIN.filter(m => m !== first)];
+  const once = (model, rounds) => withKeys(label + (model !== first ? ' [' + model.replace('gemini-', '') + ']' : ''), async key => {
+    const j = await gen(model, key, { contents: [{ role: 'user', parts: typeof parts === 'function' ? await parts(key) : parts }], generationConfig: { responseMimeType: 'application/json', maxOutputTokens: maxTok, temperature: 0.7 } });
     const t = textOf(j); if (!t) throw new Error('khali jawab'); return parseJSON(t);
-  });
+  }, { rounds });
+  S.txtBad ||= {};
+  for (const m of chain) { if (S.txtBad[m] > Date.now()) continue; try { const r = await once(m, 1); if (m !== first && !S.txtNote) { S.txtNote = 1; log(`ℹ️ ${first} ki free limit khatam — ab ${m} se kaam ho raha hai`); } return r; } catch (e) { if (e instanceof Stop) throw e; S.txtBad[m] = Date.now() + 10 * 60e3; log(`⚠️ ${m}: kaam nahi bana (${(e.message || '').slice(0, 120)}) → agla model`); } }
+  S.txtBad = {}; return once(first, 6);
 }
 async function uploadFile(key, blob, name) {
   const ck = key.slice(-8) + '|' + name + '|' + blob.size; if (S.fileCache[ck]) return S.fileCache[ck];
@@ -559,9 +564,12 @@ async function unzipImages(file) {
 async function importImages(files) {
   const P = S.P; if (!P?.scenes?.length) return alert('Pehle storyboard banao');
   let all = []; for (const f of files) { if (/\.zip$/i.test(f.name) || /zip/.test(f.type) || (f.size > 4 && (await f.slice(0, 2).text()) === 'PK')) { try { const z = await unzipImages(f); log(`🗜️ ${f.name}: ${z.length} images mili`); all.push(...z); } catch (e) { log('❌ ZIP ' + f.name + ': ' + e.message); alert('ZIP nahi khuli: ' + e.message); } } else all.push(f); }
-  files = all.sort((a, b) => { const na = (a.name.match(/(\d+)(?!.*\d)/) || [])[1], nb = (b.name.match(/(\d+)(?!.*\d)/) || [])[1]; if (na && nb && +na !== +nb) return na - nb; return (a.lastModified - b.lastModified) || a.name.localeCompare(b.name); });
-  let k = 0; const miss = P.scenes.map((s, i) => i).filter(i => !P.scenes[i].img);
-  for (const f of files) { const m = f.name.match(/scene[_\s-]*(\d+)/i); let i = m ? +m[1] - 1 : miss[k++]; if (i == null || !P.scenes[i]) continue; try { await storeSceneImage(i, f); } catch (e) { log('❌ import ' + f.name + ': ' + e.message); } }
+  const N = P.scenes.length; const sn = f => { const b = f.name.replace(/\.[a-z0-9]+$/i, ''); let m = b.match(/scene[_\s-]*(\d+)/i) || b.match(/^(\d{1,4})(?!\d)/) || b.match(/(?:^|[^a-z0-9])(\d{1,4})(?:[^a-z0-9]|$)/i); const v = m ? +m[1] : NaN; return v >= 1 && v <= N ? v : NaN; };
+  files = all.map(f => ({ f, n: sn(f) })).sort((a, b) => { const x = isNaN(a.n), y = isNaN(b.n); if (x !== y) return x ? 1 : -1; if (!x && a.n !== b.n) return a.n - b.n; return (a.f.lastModified - b.f.lastModified) || a.f.name.localeCompare(b.f.name, undefined, { numeric: true }); });
+  const used = new Set(files.filter(x => !isNaN(x.n)).map(x => x.n - 1)); let k = 0; const miss = P.scenes.map((s, i) => i).filter(i => !used.has(i) && !P.scenes[i].img); const map = [];
+  for (const { f, n } of files) { const i = !isNaN(n) ? n - 1 : miss[k++]; if (i == null || !P.scenes[i]) { log('↷ ' + f.name + ' chhod di (extra)'); continue; } try { await storeSceneImage(i, f); map.push(`#${i + 1}←${f.name}`); } catch (e) { log('❌ import ' + f.name + ': ' + e.message); } }
+  log('🧩 ' + map.join(', '));
+  files = map;
   await saveP(true); const left = P.scenes.filter(s => !s.img).length; log(`📥 ${files.length} images import hui. Baaki: ${left}`); renderBoard(); $('importHint').textContent = left ? `${left} scenes ki image baaki` : '✅ Saari images aa gayi — ▶ Resume ya 🎞️ Render dabao';
   alert(files.length ? `✅ ${files.length} images lag gayi. Baaki scenes: ${left}` : '❌ Koi image nahi mili');
 }
@@ -797,8 +805,12 @@ $('btnPause').onclick = () => { if (S.busy) { S.stop = true; log('⏸ Rok rahe h
 $('btnMissing').onclick = () => { if (!S.P) return; guard(async () => { if (S.P.mode === 'tts') await voicePhase(); await imagesPhase(); }); };
 $('btnRender').onclick = () => { if (!S.P) return; guard(async () => { if (S.P.mode === 'tts' && S.P.scenes.some(s => !s.aud || s.audStale)) await voicePhase(); await renderPhase(); await finalPhase(); }); };
 $('btnNew').onclick = async () => { if (!confirm('Sab clear ho jayega (storyboard, images, voice, video). Pakka?')) return; await clearAll(); S.P = null; renderBoard(); renderSteps(); projInfo(); log('🗑️ Naya project'); };
-$('btnCopyPrompts').onclick = async () => { if (!S.P) return; const of = +st('accCount'); const acc = +(prompt(`Kaun sa account? (1-${of})`, '1') || 0) - 1; if (acc < 0 || acc >= of) return; const r = promptsText(acc, of); if (!r.ids.length) return alert('Is account ke liye koi image baaki nahi'); try { await navigator.clipboard.writeText(r.text); } catch (e) { prompt('Copy karo:', r.text); } alert(`Account ${acc + 1}: scenes #${r.ids[0] + 1} se #${r.ids[r.ids.length - 1] + 1} (${r.ids.length}) ke prompts copy ho gaye. Images isi order me download karo, phir 📥 se SAARI ek saath select karke upload karo.`); };
+$('btnCopyPrompts').onclick = async () => { if (!S.P) return; const of = +st('accCount'); const acc = +(prompt(`Kaun sa account? (1-${of})`, '1') || 0) - 1; if (acc < 0 || acc >= of) return; const bad = S.P.scenes.filter(s => !(s.prompt || '').trim() || s.prompt === s.text).length; if (bad && !confirm(`⚠️ ${bad} scenes ke AI prompt nahi bane (quota ki wajah se), isliye images kahani se match nahi karengi. Pehle ✍️ 'Scene prompts banao' dabao. Phir bhi copy karu?`)) return; const r = promptsText(acc, of); if (!r.ids.length) return alert('Is account ke liye koi image baaki nahi'); try { await navigator.clipboard.writeText(r.text); } catch (e) { prompt('Copy karo:', r.text); } alert(`Account ${acc + 1}: scenes #${r.ids[0] + 1} se #${r.ids[r.ids.length - 1] + 1} (${r.ids.length}) ke prompts copy ho gaye. Images isi order me download karo, phir 📥 se SAARI ek saath select karke upload karo.`); };
 $('btnDlPrompts').onclick = () => { if (!S.P) return; const of = +st('accCount'); let t = ''; for (let a = 0; a < of; a++) t += promptsText(a, of).text + '\n\n==========================\n\n'; const u = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); const l = document.createElement('a'); l.href = u; l.download = 'image_prompts.txt'; l.click(); };
+$('btnRePrompt').onclick = () => { const P = S.P; if (!P?.scenes?.length) return alert('Pehle storyboard banao'); readKeys(); if (!S.keys.length) return alert('Setup me API key daalo');
+  guard(async () => { showTab('flow'); let n = 0; for (const s of P.scenes) if (!(s.prompt || '').trim() || s.prompt === s.text) { s.prompt = ''; n++; } if (!n) { if (!confirm('Saare scenes ke prompt bane hue hain. Sab dobara banau?')) return; P.scenes.forEach(s => s.prompt = ''); }
+    if (!P.sheet) { step('plan', 'run', 'story samajh rahe hain', 0.1); await sheetPhase(P.scenes.map(s => s.text).join(' ')); }
+    await promptsPhase(); step('plan', 'done', `${P.scenes.length} scenes`); await saveP(true); renderBoard(); log('✍️ Scene prompts ban gaye — ab 📋 se copy karo'); alert('✅ Prompts ban gaye. Ab 📋 se copy karke images banao.'); }); };
 $('btnZip').onclick = async () => { const fs = await pick('.zip,application/zip,application/x-zip-compressed,application/octet-stream', true); if (fs?.length) importImages(fs); };
 $('btnImport').onclick = async () => { const fs = await pick('image/*', true); if (fs?.length) importImages(fs); };
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
