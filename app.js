@@ -102,7 +102,13 @@ function renderKeyStat() {
 }
 async function testKeys() {
   const k = readKeys(); saveSettings(); showTab('flow');
-  const one = async (key, i) => { setKst(i, null, '⏳ check ho rahi hai...'); try { const r = await fetch(`${API}/models/${st('mText').trim()}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK' }] }] }) }); setKst(i, r.ok, r.ok ? '✅ verify ho gayi' : '❌ ' + r.status + ' ' + (KMSG[r.status] || '')); return r.ok; } catch (e) { setKst(i, false, '❌ network/internet'); return false; } };
+  const one = async (key, i) => { setKst(i, null, '⏳ check ho rahi hai...'); try {
+      const L = await fetch(`${API}/models?pageSize=1`, { headers: { 'x-goog-api-key': key } }); // free call, quota nahi khata
+      if (!L.ok) { setKst(i, false, '❌ ' + L.status + ' ' + (KMSG[L.status] || 'key sahi nahi')); return false; }
+      const r = await fetch(`${API}/models/${st('mText').trim()}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK' }] }] }) });
+      if (r.ok) { setKst(i, true, '✅ verify ho gayi'); return true; }
+      if (r.status === 429) { setKst(i, true, '✅ key sahi hai — par aaj ka free quota khatam (12:30 PM IST ke aas-paas reset)'); return true; }
+      setKst(i, false, '❌ ' + r.status + ' ' + (KMSG[r.status] || '')); return false; } catch (e) { setKst(i, false, '❌ network/internet'); return false; } };
   let ok = 0; for (let i = 0; i < NKEYS; i++) { if (!k[i]) { delete S.kst[i]; $('ks' + i).textContent = ''; continue; } if (await one(k[i], i)) ok++; }
   if (st('kVoice').trim()) await one(st('kVoice').trim(), 'paid');
   renderKeyStat(); log(`🔑 API keys: ${ok}/${S.keys.length} verify ho gayi`);
@@ -537,9 +543,26 @@ function promptsText(acc, of) {
   const P = S.P; const miss = P.scenes.map((s, i) => i).filter(i => !P.scenes[i].img); const per = Math.ceil(miss.length / of); const mine = miss.slice(acc * per, (acc + 1) * per);
   return { ids: mine, text: `Account ${acc + 1}/${of} — ${mine.length} images. Har image ${P.aspect} me banao, reference stickman image attach karo. Model: Nano Banana 2.1.\n\n` + mine.map(i => `#${i + 1}\n${fullPrompt(i, true)}`).join('\n\n----------\n\n') };
 }
+async function unzipImages(file) {
+  const b = new Uint8Array(await file.arrayBuffer()), dv = new DataView(b.buffer); let e = -1;
+  for (let i = b.length - 22; i >= Math.max(0, b.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error('ZIP sahi nahi hai');
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const out = [], td = new TextDecoder();
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const meth = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const name = td.decode(b.subarray(p + 46, p + 46 + nl)); p += 46 + nl + xl + cl;
+    const base = name.split('/').pop(); if (!/\.(png|jpe?g|webp)$/i.test(base) || name.includes('__MACOSX') || base.startsWith('.')) continue;
+    const ds = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true); const raw = b.slice(ds, ds + csz);
+    let data; if (meth === 0) data = raw; else if (meth === 8) data = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); else continue;
+    const ext = base.split('.').pop().toLowerCase(); out.push(new File([data], base, { type: ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg', lastModified: k }));
+  }
+  return out;
+}
 async function importImages(files) {
   const P = S.P; if (!P?.scenes?.length) return alert('Pehle storyboard banao');
-  files = [...files].sort((a, b) => { const na = (a.name.match(/(\d+)(?!.*\d)/) || [])[1], nb = (b.name.match(/(\d+)(?!.*\d)/) || [])[1]; if (na && nb && +na !== +nb) return na - nb; return (a.lastModified - b.lastModified) || a.name.localeCompare(b.name); });
+  let all = []; for (const f of files) { if (/\.zip$/i.test(f.name) || /zip/.test(f.type)) { try { const z = await unzipImages(f); log(`🗜️ ${f.name}: ${z.length} images mili`); all.push(...z); } catch (e) { log('❌ ZIP ' + f.name + ': ' + e.message); alert('ZIP nahi khuli: ' + e.message); } } else all.push(f); }
+  files = all.sort((a, b) => { const na = (a.name.match(/(\d+)(?!.*\d)/) || [])[1], nb = (b.name.match(/(\d+)(?!.*\d)/) || [])[1]; if (na && nb && +na !== +nb) return na - nb; return (a.lastModified - b.lastModified) || a.name.localeCompare(b.name); });
   let k = 0; const miss = P.scenes.map((s, i) => i).filter(i => !P.scenes[i].img);
   for (const f of files) { const m = f.name.match(/scene[_\s-]*(\d+)/i); let i = m ? +m[1] - 1 : miss[k++]; if (i == null || !P.scenes[i]) continue; try { await storeSceneImage(i, f); } catch (e) { log('❌ import ' + f.name + ': ' + e.message); } }
   await saveP(true); const left = P.scenes.filter(s => !s.img).length; log(`📥 ${files.length} images import hui. Baaki: ${left}`); renderBoard(); $('importHint').textContent = left ? `${left} scenes ki image baaki` : '✅ Saari images aa gayi — ▶ Resume ya 🎞️ Render dabao';
@@ -778,7 +801,7 @@ $('btnRender').onclick = () => { if (!S.P) return; guard(async () => { if (S.P.m
 $('btnNew').onclick = async () => { if (!confirm('Sab clear ho jayega (storyboard, images, voice, video). Pakka?')) return; await clearAll(); S.P = null; renderBoard(); renderSteps(); projInfo(); log('🗑️ Naya project'); };
 $('btnCopyPrompts').onclick = async () => { if (!S.P) return; const of = +st('accCount'); const acc = +(prompt(`Kaun sa account? (1-${of})`, '1') || 0) - 1; if (acc < 0 || acc >= of) return; const r = promptsText(acc, of); if (!r.ids.length) return alert('Is account ke liye koi image baaki nahi'); try { await navigator.clipboard.writeText(r.text); } catch (e) { prompt('Copy karo:', r.text); } alert(`Account ${acc + 1}: scenes #${r.ids[0] + 1} se #${r.ids[r.ids.length - 1] + 1} (${r.ids.length}) ke prompts copy ho gaye. Images isi order me download karo, phir 📥 se SAARI ek saath select karke upload karo.`); };
 $('btnDlPrompts').onclick = () => { if (!S.P) return; const of = +st('accCount'); let t = ''; for (let a = 0; a < of; a++) t += promptsText(a, of).text + '\n\n==========================\n\n'; const u = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); const l = document.createElement('a'); l.href = u; l.download = 'image_prompts.txt'; l.click(); };
-$('btnImport').onclick = async () => { const fs = await pick('image/*', true); if (fs?.length) importImages(fs); };
+$('btnImport').onclick = async () => { const fs = await pick('image/*,.zip,application/zip,application/x-zip-compressed', true); if (fs?.length) importImages(fs); };
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
 
 (async () => { S.P = await get('proj') || null; const d = await get('scriptDraft'); if (d && !st('script')) st('script', d); const refs = await get('refs'); if (refs) { S.refs = refs; refs.forEach(r => { const im = document.createElement('img'); im.src = URL.createObjectURL(r); $('refThumbs').appendChild(im); }); }
