@@ -1,5 +1,6 @@
 // Stickman Studio v2 — all logic runs on the phone. Gemini REST API is called directly with the user's keys.
 import * as MB from './mediabunny.min.mjs';
+import { unzipSync } from './fflate.mjs';
 
 const API = 'https://generativelanguage.googleapis.com/v1beta';
 const $ = id => document.getElementById(id);
@@ -543,29 +544,26 @@ function promptsText(acc, of) {
   const P = S.P; const miss = P.scenes.map((s, i) => i).filter(i => !P.scenes[i].img); const per = Math.ceil(miss.length / of); const mine = miss.slice(acc * per, (acc + 1) * per);
   return { ids: mine, text: `Account ${acc + 1}/${of} — ${mine.length} images. Har image ${P.aspect} me banao, reference stickman image attach karo. Model: Nano Banana 2.1.\n\n` + mine.map(i => `#${i + 1}\n${fullPrompt(i, true)}`).join('\n\n----------\n\n') };
 }
+function imgType(d) { if (d[0] === 0x89 && d[1] === 0x50) return 'image/png'; if (d[0] === 0xFF && d[1] === 0xD8) return 'image/jpeg'; if (d[0] === 0x52 && d[1] === 0x49 && d[8] === 0x57 && d[9] === 0x45) return 'image/webp'; return ''; }
 async function unzipImages(file) {
-  const b = new Uint8Array(await file.arrayBuffer()), dv = new DataView(b.buffer); let e = -1;
-  for (let i = b.length - 22; i >= Math.max(0, b.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
-  if (e < 0) throw new Error('ZIP sahi nahi hai');
-  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const out = [], td = new TextDecoder();
-  for (let k = 0; k < n; k++) {
-    if (dv.getUint32(p, true) !== 0x02014b50) break;
-    const meth = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
-    const name = td.decode(b.subarray(p + 46, p + 46 + nl)); p += 46 + nl + xl + cl;
-    const base = name.split('/').pop(); if (!/\.(png|jpe?g|webp)$/i.test(base) || name.includes('__MACOSX') || base.startsWith('.')) continue;
-    const ds = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true); const raw = b.slice(ds, ds + csz);
-    let data; if (meth === 0) data = raw; else if (meth === 8) data = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); else continue;
-    const ext = base.split('.').pop().toLowerCase(); out.push(new File([data], base, { type: ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg', lastModified: k }));
+  const b = new Uint8Array(await file.arrayBuffer()); if (!(b[0] === 0x50 && b[1] === 0x4B)) throw new Error('ye ZIP file nahi lag rahi');
+  const all = unzipSync(b); const out = []; let k = 0;
+  for (const [name, data] of Object.entries(all)) {
+    if (name.endsWith('/') || name.includes('__MACOSX') || !data.length) continue; const base = name.split('/').pop(); if (base.startsWith('.')) continue;
+    if (/\.zip$/i.test(base)) { try { out.push(...await unzipImages(new File([data], base))); } catch (e) { } continue; }
+    const t = imgType(data); if (!t) continue; out.push(new File([data], base, { type: t, lastModified: k++ }));
   }
+  if (!out.length) throw new Error('ZIP me koi PNG/JPG/WEBP image nahi mili');
   return out;
 }
 async function importImages(files) {
   const P = S.P; if (!P?.scenes?.length) return alert('Pehle storyboard banao');
-  let all = []; for (const f of files) { if (/\.zip$/i.test(f.name) || /zip/.test(f.type)) { try { const z = await unzipImages(f); log(`🗜️ ${f.name}: ${z.length} images mili`); all.push(...z); } catch (e) { log('❌ ZIP ' + f.name + ': ' + e.message); alert('ZIP nahi khuli: ' + e.message); } } else all.push(f); }
+  let all = []; for (const f of files) { if (/\.zip$/i.test(f.name) || /zip/.test(f.type) || (f.size > 4 && (await f.slice(0, 2).text()) === 'PK')) { try { const z = await unzipImages(f); log(`🗜️ ${f.name}: ${z.length} images mili`); all.push(...z); } catch (e) { log('❌ ZIP ' + f.name + ': ' + e.message); alert('ZIP nahi khuli: ' + e.message); } } else all.push(f); }
   files = all.sort((a, b) => { const na = (a.name.match(/(\d+)(?!.*\d)/) || [])[1], nb = (b.name.match(/(\d+)(?!.*\d)/) || [])[1]; if (na && nb && +na !== +nb) return na - nb; return (a.lastModified - b.lastModified) || a.name.localeCompare(b.name); });
   let k = 0; const miss = P.scenes.map((s, i) => i).filter(i => !P.scenes[i].img);
   for (const f of files) { const m = f.name.match(/scene[_\s-]*(\d+)/i); let i = m ? +m[1] - 1 : miss[k++]; if (i == null || !P.scenes[i]) continue; try { await storeSceneImage(i, f); } catch (e) { log('❌ import ' + f.name + ': ' + e.message); } }
   await saveP(true); const left = P.scenes.filter(s => !s.img).length; log(`📥 ${files.length} images import hui. Baaki: ${left}`); renderBoard(); $('importHint').textContent = left ? `${left} scenes ki image baaki` : '✅ Saari images aa gayi — ▶ Resume ya 🎞️ Render dabao';
+  alert(files.length ? `✅ ${files.length} images lag gayi. Baaki scenes: ${left}` : '❌ Koi image nahi mili');
 }
 
 /* ================= render ================= */
@@ -801,7 +799,8 @@ $('btnRender').onclick = () => { if (!S.P) return; guard(async () => { if (S.P.m
 $('btnNew').onclick = async () => { if (!confirm('Sab clear ho jayega (storyboard, images, voice, video). Pakka?')) return; await clearAll(); S.P = null; renderBoard(); renderSteps(); projInfo(); log('🗑️ Naya project'); };
 $('btnCopyPrompts').onclick = async () => { if (!S.P) return; const of = +st('accCount'); const acc = +(prompt(`Kaun sa account? (1-${of})`, '1') || 0) - 1; if (acc < 0 || acc >= of) return; const r = promptsText(acc, of); if (!r.ids.length) return alert('Is account ke liye koi image baaki nahi'); try { await navigator.clipboard.writeText(r.text); } catch (e) { prompt('Copy karo:', r.text); } alert(`Account ${acc + 1}: scenes #${r.ids[0] + 1} se #${r.ids[r.ids.length - 1] + 1} (${r.ids.length}) ke prompts copy ho gaye. Images isi order me download karo, phir 📥 se SAARI ek saath select karke upload karo.`); };
 $('btnDlPrompts').onclick = () => { if (!S.P) return; const of = +st('accCount'); let t = ''; for (let a = 0; a < of; a++) t += promptsText(a, of).text + '\n\n==========================\n\n'; const u = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); const l = document.createElement('a'); l.href = u; l.download = 'image_prompts.txt'; l.click(); };
-$('btnImport').onclick = async () => { const fs = await pick('image/*,.zip,application/zip,application/x-zip-compressed', true); if (fs?.length) importImages(fs); };
+$('btnZip').onclick = async () => { const fs = await pick('.zip,application/zip,application/x-zip-compressed,application/octet-stream', true); if (fs?.length) importImages(fs); };
+$('btnImport').onclick = async () => { const fs = await pick('image/*', true); if (fs?.length) importImages(fs); };
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
 
 (async () => { S.P = await get('proj') || null; const d = await get('scriptDraft'); if (d && !st('script')) st('script', d); const refs = await get('refs'); if (refs) { S.refs = refs; refs.forEach(r => { const im = document.createElement('img'); im.src = URL.createObjectURL(r); $('refThumbs').appendChild(im); }); }
