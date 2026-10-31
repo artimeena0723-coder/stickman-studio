@@ -183,7 +183,7 @@ a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:
     <h2>🎙️ AI Voice</h2>
     <div class="row">
       <div><label>Language</label><select id="lang"><option value="hi">Hindi</option><option value="en">English</option></select></div>
-      <div><label>Voice model</label><select id="ttsModel"><option value="gemini-3.8-flash-tts">Flash TTS — best quality</option><option value="gemini-3.8-flash-lite-tts">Flash-Lite TTS — fast</option></select></div>
+      <div><label>Voice model</label><select id="ttsModel"><option value="gemini-3.8-flash-tts">Flash TTS — best quality</option><option value="gemini-3.8-flash-lite-tts">Flash-Lite TTS — fast</option><option value="gemini-3.1-flash-tts-preview">3.1 Flash TTS (purana, alag limit)</option></select></div>
     </div>
     <label>Voice character</label>
     <select id="voiceSel"></select>
@@ -247,11 +247,16 @@ a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:
 <!-- ============ WORKFLOW ============ -->
 <section class="tab" id="t-flow">
   <div class="card">
+    <h2>🔑 API keys — verify hui ya nahi</h2>
+    <div id="keyStat"></div>
+    <button class="sec" id="btnKeys2" style="margin-top:8px">🔑 Keys verify karo</button>
+  </div>
+  <div class="card">
     <h2>🧭 Workflow — abhi kya chal raha hai</h2>
     <div id="steps"></div>
     <div class="row" style="margin-top:10px"><button id="btnResume">▶ Resume</button><button class="sec" id="btnPause">⏸ Pause</button></div>
   </div>
-  <div class="card"><h2>📜 Live log</h2><div id="log"></div></div>
+  <div class="card"><h2>📜 Live log</h2><div id="log"></div><button class="sec" id="btnCopyLog" style="margin-top:8px">📋 Log copy karo</button></div>
 </section>
 
 <!-- ============ EXPORT ============ -->

@@ -72,7 +72,7 @@ function step(id, state, sub, frac) {
   const name = (stepsFor().find(s => s[0] === id) || [, ''])[1];
   setProgress(100 * sum / tot, state === 'run' ? name + (sub ? ' — ' + sub : '') : state === 'err' ? '❌ ' + name + ' — Workflow dekho' : undefined);
 }
-function renderSteps() { const ss = S.P?.steps || {}; $('steps').innerHTML = stepsFor().map(([id, n]) => { const s = ss[id] || {}; return `<div class="step"><span class="dot ${s.st || ''}"></span><span>${n}</span><span class="sp">${esc(s.sub || ({ done: '✓', err: 'error' }[s.st] || ''))}</span></div>`; }).join(''); }
+function renderSteps() { renderKeyStat(); const ss = S.P?.steps || {}; $('steps').innerHTML = stepsFor().map(([id, n]) => { const s = ss[id] || {}; return `<div class="step"><span class="dot ${s.st || ''}"></span><span>${n}</span><span class="sp">${esc(s.sub || ({ done: '✓', err: 'error' }[s.st] || ''))}</span></div>`; }).join(''); }
 let wakeLock = null;
 async function keepAwake(on) { try { if (on && 'wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.onrelease = () => wakeLock = null; } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; } } catch (e) { } }
 document.addEventListener('visibilitychange', () => { if (S.busy) { if (document.hidden) log('⚠️ App background me gayi — phone kaam rok sakta hai. App screen par rakho.'); else keepAwake(true); } });
@@ -91,12 +91,21 @@ function loadSettings() {
 function saveSettings() { PERSIST.forEach(id => $(id) && localStorage.setItem('ss_' + id, st(id))); PERSIST_CHK.forEach(id => localStorage.setItem('ss_' + id, st(id) ? '1' : '0')); }
 document.addEventListener('change', e => { if (e.target.id && (PERSIST.includes(e.target.id) || PERSIST_CHK.includes(e.target.id))) saveSettings(); });
 function readKeys() { const k = []; for (let i = 0; i < NKEYS; i++) k.push(st('k' + i).trim()); localStorage.setItem('ss_keys', JSON.stringify(k)); S.keys = k.filter(Boolean); S.keyIdx = 0; return k; }
+S.kst = {};
+const KMSG = { 400: 'galat key', 401: 'galat key', 403: 'permission nahi', 429: 'quota khatam (baad me chalegi)', 404: 'model naam galat' };
+function setKst(i, ok, msg) { S.kst[i] = { ok, msg, t: Date.now() }; const el = $('ks' + (i === 'paid' ? 'V' : i)); if (el) { el.textContent = msg; el.style.color = ok === null ? '' : ok ? 'var(--ok)' : 'var(--bad)'; } renderKeyStat(); }
+function renderKeyStat() {
+  const el = $('keyStat'); if (!el) return; const rows = [];
+  for (let i = 0; i < NKEYS; i++) { const v = st('k' + i).trim(); if (!v) continue; const k = S.kst[i]; rows.push(`<div class="step"><span class="dot ${k ? (k.ok === null ? 'run' : k.ok ? 'done' : 'err') : ''}"></span><span>Key ${i + 1} <small class="hint">…${esc(v.slice(-4))}</small></span><span class="sp">${esc(k ? k.msg : 'check nahi hui')}</span></div>`); }
+  if (st('kVoice').trim()) { const k = S.kst.paid; rows.push(`<div class="step"><span class="dot ${k ? (k.ok ? 'done' : 'err') : ''}"></span><span>Paid voice key</span><span class="sp">${esc(k ? k.msg : 'check nahi hui')}</span></div>`); }
+  el.innerHTML = rows.length ? rows.join('') : '<div class="hint">Koi key nahi daali. Setup tab me key daalo.</div>';
+}
 async function testKeys() {
-  const k = readKeys(); saveSettings();
-  const one = async (key, el) => { el.textContent = '⏳'; try { const r = await fetch(`${API}/models/${st('mText').trim()}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK' }] }] }) }); el.textContent = r.ok ? '✅ chal rahi hai' : '❌ ' + r.status; el.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; return r.ok; } catch (e) { el.textContent = '❌ network'; el.style.color = 'var(--bad)'; return false; } };
-  let ok = 0; for (let i = 0; i < NKEYS; i++) { if (!k[i]) { $('ks' + i).textContent = ''; continue; } if (await one(k[i], $('ks' + i))) ok++; }
-  if (st('kVoice').trim()) await one(st('kVoice').trim(), $('ksV'));
-  log(`API keys: ${ok}/${S.keys.length} chal rahi hain`);
+  const k = readKeys(); saveSettings(); showTab('flow');
+  const one = async (key, i) => { setKst(i, null, '⏳ check ho rahi hai...'); try { const r = await fetch(`${API}/models/${st('mText').trim()}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK' }] }] }) }); setKst(i, r.ok, r.ok ? '✅ verify ho gayi' : '❌ ' + r.status + ' ' + (KMSG[r.status] || '')); return r.ok; } catch (e) { setKst(i, false, '❌ network/internet'); return false; } };
+  let ok = 0; for (let i = 0; i < NKEYS; i++) { if (!k[i]) { delete S.kst[i]; $('ks' + i).textContent = ''; continue; } if (await one(k[i], i)) ok++; }
+  if (st('kVoice').trim()) await one(st('kVoice').trim(), 'paid');
+  renderKeyStat(); log(`🔑 API keys: ${ok}/${S.keys.length} verify ho gayi`);
 }
 
 /* ================= Gemini with auto key switch ================= */
@@ -111,11 +120,11 @@ async function withKeys(label, fn, { purpose = 'main', rounds = 8 } = {}) {
     for (let a = 0; a < keys.length; a++) {
       chk();
       const ki = useIdx ? 0 : S.keyIdx % keys.length;
-      try { return await fn(keys[ki], useIdx ? 'paid' : ki); }
+      try { const r = await fn(keys[ki], useIdx ? 'paid' : ki); if (!S.kst[useIdx ? 'paid' : ki]?.ok) setKst(useIdx ? 'paid' : ki, true, '✅ chal rahi hai'); return r; }
       catch (e) {
         if (e instanceof Stop || e instanceof Fatal) throw e;
         if (e instanceof Skip) { skips++; if (skips >= keys.length * 2) throw new Fatal(label + ': ' + e.message); }
-        last = e.message || String(e);
+        last = e.message || String(e); if (!(e instanceof Skip) && !e.bad) setKst(useIdx ? 'paid' : ki, false, '❌ ' + (e.status ? e.status + ' ' + (KMSG[e.status] || '') : 'network'));
       }
       if (!useIdx && keys.length > 1) { S.keyIdx = (ki + 1) % keys.length; log(`⚠️ ${label}: Key ${ki + 1} fail (${last.slice(0, 80)}) → Key ${S.keyIdx + 1}`); }
       else log(`⚠️ ${label}: retry (${last.slice(0, 80)})`);
@@ -261,22 +270,44 @@ async function makeClone() {
 }
 
 /* ================= TTS ================= */
-async function tts(text, voiceSel, style, label) {
-  return withKeys(label, async (key, ki) => {
-    const voice = voiceFor(voiceSel, ki);
+const TTS_CHAIN = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini-3.1-flash-tts-preview'];
+const isQuota = e => e && (e.status === 429 || e.billing || /quota|exhaust|RESOURCE_EXHAUSTED|limit: 0/i.test(e.message || ''));
+async function ttsOnce(model, key, ki, text, voiceSel, style) {
+  const voice = voiceFor(voiceSel, ki); const old = !/^gemini-3\.8/.test(model);
+  const classic = () => gen(model, key, { contents: [{ parts: [{ text: style ? `Say in a ${style} way: ${text}` : text }] }], generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: /^voice_|^voicekey_/.test(voice) ? 'Charon' : voice } } } } });
+  let j;
+  if (old) j = await classic();
+  else {
     const body = { contents: [{ role: 'user', parts: [{ text, ...(style ? { speech_metadata: { style } } : {}) }] }], generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { voice } } } };
-    let j;
-    try { j = await gen(st('ttsModel'), key, body); }
-    catch (e) { if (e.bad && /voice|speech_metadata|unknown name|field/i.test(e.body || '') && !/^voice_|^voicekey_/.test(voice)) j = await gen(st('ttsModel'), key, { contents: [{ parts: [{ text: style ? `(${style}) ${text}` : text }] }], generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } } }); else throw e; }
-    const p = partsOf(j).find(p => p.inlineData || p.inline_data); if (!p) throw new Error('audio nahi aaya');
-    const d = p.inlineData || p.inline_data; const w = parseWav(unb64(d.data)); return resampleI16(w.pcm, w.sr, SR);
-  }, { purpose: 'voice' });
+    try { j = await gen(model, key, body); }
+    catch (e) { if (e.bad && /voice|speech_metadata|unknown name|field/i.test(e.body || '') && !/^voice_|^voicekey_/.test(voice)) j = await classic(); else throw e; }
+  }
+  const p = partsOf(j).find(p => p.inlineData || p.inline_data); if (!p) throw new Error('audio nahi aaya');
+  const d = p.inlineData || p.inline_data; const raw = unb64(d.data);
+  if (/l16|pcm/i.test(d.mimeType || d.mime_type || '') && !(raw[0] === 82 && raw[1] === 73)) { const i16 = new Int16Array(raw.buffer, raw.byteOffset, raw.byteLength >> 1); return resampleI16(i16, +((d.mimeType || d.mime_type).match(/rate=(\d+)/)?.[1] || 24000), SR); }
+  const w = parseWav(raw); return resampleI16(w.pcm, w.sr, SR);
+}
+// tries every key on the chosen model; if ALL keys say quota (429), switches to the next voice model automatically
+async function tts(text, voiceSel, style, label) {
+  const first = st('ttsModel'); const custom = /^cv:/.test(voiceSel || '');
+  const chain = [first, ...TTS_CHAIN.filter(m => m !== first && !(custom && !/^gemini-3\.8/.test(m)))];
+  S.ttsBad ||= {}; let lastErr;
+  for (const model of chain) {
+    if (S.ttsBad[model] && S.ttsBad[model] > Date.now() && model !== chain[chain.length - 1]) continue;
+    try { const r = await withKeys(label + ' [' + model.replace('gemini-', '') + ']', (key, ki) => ttsOnce(model, key, ki, text, voiceSel, style).catch(e => { if (isQuota(e) && ki !== 'paid') { e.quota = true; } throw e; }), { purpose: 'voice', rounds: 1 });
+      if (model !== first && !S.ttsNote) { S.ttsNote = 1; log(`ℹ️ ${first} ki free limit khatam — ab ${model} se voice ban rahi hai`); } return r; }
+    catch (e) { if (e instanceof Stop || e instanceof Fatal && !/Model nahi mila/.test(e.message)) throw e; lastErr = e; S.ttsBad[model] = Date.now() + 10 * 60e3; log(`⚠️ ${model}: sab keys par fail (${(e.message || '').slice(0, 160)}) → agla voice model`); }
+  }
+  // all models exhausted: wait-and-retry on the chosen model like before
+  log('⏳ Saare voice models ki limit abhi bhari hai — thoda ruk kar dobara try...'); S.ttsBad = {};
+  try { return await withKeys(label, (key, ki) => ttsOnce(first, key, ki, text, voiceSel, style), { purpose: 'voice', rounds: 4 }); }
+  catch (e) { if (e instanceof Stop) throw e; throw new Fatal('Voice nahi bani (sab keys + sab models par limit): ' + (e.message || lastErr?.message || '').slice(0, 300) + ' — Har API key ALAG project se banao. Daily limit 12:30 PM IST ke aas-paas reset hoti hai.'); }
 }
 async function voiceTest() {
-  saveSettings(); localStorage.setItem('ss_testText_' + st('lang'), st('testText')); localStorage.setItem('ss_voiceSel', st('voiceSel'));
+  readKeys(); saveSettings(); localStorage.setItem('ss_testText_' + st('lang'), st('testText')); localStorage.setItem('ss_voiceSel', st('voiceSel'));
   const b = $('btnTest'); b.disabled = true; b.textContent = '⏳ Voice ban rahi hai...';
   try { const pcm = await tts(st('testText'), st('voiceSel'), st('vStyle'), 'Voice test'); playPcm(trimSilence(pcm), st('enh')); }
-  catch (e) { alert('Voice test fail: ' + e.message.slice(0, 250)); }
+  catch (e) { log('❌ Voice test: ' + e.message); alert('Voice test fail: ' + e.message.slice(0, 400)); }
   finally { b.disabled = false; b.textContent = '▶ Voice test karo'; }
 }
 
@@ -714,7 +745,7 @@ async function sceneAction(a, i, btn) {
 loadSettings();
 seg('aspSeg', 'aspect'); seg('resSeg', 'res'); seg('fpsSeg', 'fps'); seg('imgSizeSeg', 'imgSize');
 seg('imgSrcSeg', 'imgSrc', v => { $('imgSrcHint').textContent = v === 'import' ? 'Free mode: app har scene ka prompt degi. Gemini app / Flow me reference image ke saath images banao, phir Storyboard me 📥 se ek saath import karo.' : 'API mode: images Nano Banana se khud banengi — key par billing ON honi chahiye (free tier me image nahi banti).'; });
-seg('modeSeg', 'mode', v => { $('modeTts').style.display = v === 'tts' ? '' : 'none'; $('modeUpload').style.display = v === 'upload' ? '' : 'none'; });
+seg('modeSeg', 'mode', v => { $('modeTts').style.display = v === 'tts' ? '' : 'none'; $('modeUpload').style.display = v === 'upload' ? '' : 'none'; if (!S.P) renderSteps(); });
 $('modeTts').style.display = segVal('modeSeg') === 'tts' ? '' : 'none'; $('modeUpload').style.display = segVal('modeSeg') === 'upload' ? '' : 'none';
 $('imgSrcSeg').querySelector('button.on')?.click();
 if (!localStorage.getItem('ss_imgModel')) st('imgModel', 'gemini-nano-banana-2.1');
@@ -722,13 +753,15 @@ $('preset').onchange = () => { const p = PRESETS[st('preset')]; st('minSec', p.m
 if (!localStorage.getItem('ss_vStyle')) st('vStyle', PRESETS[st('preset')].voice);
 $('lang').onchange = () => { saveSettings(); onLang(); updateImgCost(); }; onLang();
 $('voiceSel').onchange = () => localStorage.setItem('ss_voiceSel', st('voiceSel'));
-$('btnKeys').onclick = testKeys; $('btnTest').onclick = voiceTest; $('btnLib').onclick = loadLibrary; $('btnMine').onclick = loadMine; $('btnClone').onclick = makeClone;
+$('btnCopyLog').onclick = async () => { const t = $('log').textContent.slice(-6000); try { await navigator.clipboard.writeText(t); alert('Log copy ho gaya — chat me paste kar do'); } catch (e) { prompt('Ye text copy karo:', t.slice(-1500)); } };
+$('btnKeys').onclick = testKeys; $('btnKeys2').onclick = testKeys; $('btnTest').onclick = voiceTest; $('btnLib').onclick = loadLibrary; $('btnMine').onclick = loadMine; $('btnClone').onclick = makeClone;
 $('recSrc').onclick = e => record(e.target, 'cloneSrcB'); $('recCon').onclick = e => record(e.target, 'cloneConB');
 $('cloneSrc').onchange = async e => { const f = e.target.files[0]; if (!f) return; S.cloneSrcB = f; S.cloneSrcBPcm = await decodeSmall(f); $('srcInfo').textContent = `${(S.cloneSrcBPcm.length / SR).toFixed(1)} sec`; };
 $('cloneCon').onchange = async e => { const f = e.target.files[0]; if (!f) return; S.cloneConB = f; S.cloneConBPcm = await decodeSmall(f); $('conInfo').textContent = `${(S.cloneConBPcm.length / SR).toFixed(1)} sec`; };
 $('refIn').onchange = async e => { const fs = [...e.target.files].slice(0, 3); $('refThumbs').innerHTML = ''; S.refs = []; for (const f of fs) { S.refs.push(await shrink(f, 1024, 0.9)); const im = document.createElement('img'); im.src = URL.createObjectURL(f); $('refThumbs').appendChild(im); } await put('refs', S.refs); log(`${S.refs.length} reference image add hui`); };
 $('bgIn').onchange = async e => { const f = e.target.files[0]; $('bgThumbs').innerHTML = ''; if (!f) { await del('bgref'); return; } await put('bgref', await shrink(f, 1024, 0.9)); const im = document.createElement('img'); im.src = URL.createObjectURL(f); $('bgThumbs').appendChild(im); };
 $('scriptIn').onchange = async e => { const f = e.target.files[0]; if (f) { st('script', await f.text()); updateImgCost(); log('Script upload hui: ' + f.name); } };
+document.addEventListener('input', e => { if (/^k\d$|^kVoice$/.test(e.target.id)) { readKeys(); saveSettings(); const i = e.target.id === 'kVoice' ? 'paid' : +e.target.id[1]; delete S.kst[i]; const el = $('ks' + (i === 'paid' ? 'V' : i)); if (el) el.textContent = ''; renderKeyStat(); } });
 $('script').addEventListener('input', () => { clearTimeout(S.sT); S.sT = setTimeout(() => { updateImgCost(); put('scriptDraft', st('script')); }, 600); });
 $('voiceIn').onchange = e => { const f = e.target.files[0]; S.voiceFile = f || null; if (f) $('voiceInfo').textContent = `Voice: ${f.name} (${(f.size / 1e6).toFixed(1)} MB)`; };
 $('minSec').onchange = $('maxSec').onchange = () => { if (+st('maxSec') > 8) st('maxSec', 8); updateImgCost(); saveSettings(); };
@@ -750,5 +783,5 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) naviga
 
 (async () => { S.P = await get('proj') || null; const d = await get('scriptDraft'); if (d && !st('script')) st('script', d); const refs = await get('refs'); if (refs) { S.refs = refs; refs.forEach(r => { const im = document.createElement('img'); im.src = URL.createObjectURL(r); $('refThumbs').appendChild(im); }); }
   if (S.P) { renderSteps(); renderCast(); projInfo(); log(`📂 Pichhla project khula: ${S.P.scenes.length} scenes. ▶ Resume se aage chalao.`); if (S.P.finalDone && await fileExists('final.mp4')) showFinal(); }
-  updateImgCost(); })();
+  renderSteps(); updateImgCost(); })();
 window.__S = S; window.__imp = importImages; window.__rb = renderBoard; // debug/testing
