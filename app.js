@@ -327,7 +327,7 @@ function fullPrompt(i, forManual) {
     `ART STYLE: ${ART} ${pre.look}`, `MAIN CHARACTER: ${sh.character || 'the stickman from the reference image'}. Keep exactly the same face identity, head shape, eyes, eyebrows, line thickness, colours and outfit.`,
     sh.cast?.length ? `OTHER CHARACTERS: ${sh.cast.map(c => `${c.name}: ${c.look || ''}`).join('; ')}` : '',
     `WORLD: ${sh.world || ''}`, loc ? `LOCATION (${s.loc}): ${loc}. Keep this place looking identical every time it appears.` : '',
-    `SCENE: ${s.prompt}`, s.shot ? `CAMERA: ${s.shot} shot.` : '', s.start < 60 ? 'This is part of the HOOK: make it dramatic, emotional and curiosity-driving.' : '',
+    `SCENE: ${(s.prompt || '').trim() || ('Illustrate this exact story moment: ' + (s.text || '').trim())}`, s.shot ? `CAMERA: ${s.shot} shot.` : '', s.start < 60 ? 'This is part of the HOOK: make it dramatic, emotional and curiosity-driving.' : '',
     `Aspect ratio ${P.aspect}. ${NEG}`].filter(Boolean).join('\n');
 }
 async function genImage(i) {
@@ -428,7 +428,7 @@ For EACH scene below write a concrete visual for ONE illustration that matches t
 ${P.mode === 'tts' && st('autoEmo') ? `Also split each scene's narration into "lines" by speaker: Narrator or a character name from the list (only quoted dialogue belongs to a character). For each line give the EXACT text (copy verbatim, nothing added or removed, keep all words) and a short delivery "style" with the real emotion (e.g. "angry, shouting", "calm and soft", "terrified whisper", "excited", "sad, slow"). ${st('autoCast') ? '' : 'Use speaker Narrator for everything.'}` : ''}
 Return ONLY JSON: {"scenes":[{"i":0,"prompt":"English visual description","loc":"location_key","shot":"wide|medium|close-up","trans":"fade|slide|push|zoom|circle"${P.mode === 'tts' && st('autoEmo') ? ',"lines":[{"spk":"Narrator","text":"...","style":"..."}]' : ''}}]}
 SCENES: ${JSON.stringify(list)}` }], 32768);
-    for (const r of d.scenes || []) { const s = P.scenes[r.i]; if (!s || !ids.includes(r.i)) continue; s.prompt = r.prompt || s.text; s.loc = P.sheet.locations?.[r.loc] ? r.loc : ''; s.shot = r.shot || ''; s.trans = TRANS.includes(r.trans) ? r.trans : TRANS[r.i % 5];
+    for (const r of d.scenes || []) { const s = P.scenes[r.i]; if (!s || !ids.includes(r.i)) continue; s.prompt = (typeof r.prompt === 'string' ? r.prompt.trim() : '') || s.text; s.loc = P.sheet.locations?.[r.loc] ? r.loc : ''; s.shot = r.shot || ''; s.trans = TRANS.includes(r.trans) ? r.trans : TRANS[r.i % 5];
       if (Array.isArray(r.lines) && r.lines.length) { const joined = r.lines.map(l => l.text || '').join(' ').replace(/\s+/g, ' ').trim(); const orig = s.text.replace(/\s+/g, ' ').trim(); if (Math.abs(joined.length - orig.length) <= Math.max(6, orig.length * 0.08)) s.lines = r.lines.map(l => ({ spk: castNames.includes(l.spk) ? l.spk : 'Narrator', text: l.text, style: l.style || '' })); } }
     for (const i of ids) { const s = P.scenes[i]; if (!s.prompt) { s.prompt = s.text; s.trans = TRANS[i % 5]; } }
     done += ids.length; step('plan', 'run', `prompts ${done}/${P.scenes.length}`, 0.3 + 0.7 * done / P.scenes.length); await saveP(true);
@@ -679,14 +679,14 @@ async function pipeline() {
   if (P.mode === 'tts') {
     if (!P.scenes.length) { step('plan', 'run', 'script tod rahe hain', 0.02); const sc = await get('script'); P.scenes = splitScript(sc, P.lang, P.minSec, P.maxSec).map(t => ({ text: t, prompt: '', dur: 0 })); log(`✂️ ${P.scenes.length} scenes (har ek ~${P.minSec}-${P.maxSec} sec)`); await saveP(true); }
     if (!P.sheet) { step('plan', 'run', 'story samajh rahe hain', 0.1); await sheetPhase(await get('script')); await saveP(true); }
-    if (P.scenes.some(s => !s.prompt)) { await promptsPhase(); }
+    if (P.scenes.some(s => !(s.prompt || '').trim())) { await promptsPhase(); }
     step('plan', 'done', `${P.scenes.length} scenes`); renderCast();
     await voicePhase();
   } else {
     await decodePhase(); await transcribePhase();
     step('plan', 'run', 'scenes bana rahe hain', 0); await buildUploadScenes();
     if (!P.sheet) await sheetPhase(P.scenes.map(s => s.text).join(' ')); await saveP(true);
-    if (P.scenes.some(s => !s.prompt)) await promptsPhase(); step('plan', 'done', `${P.scenes.length} scenes`);
+    if (P.scenes.some(s => !(s.prompt || '').trim())) await promptsPhase(); step('plan', 'done', `${P.scenes.length} scenes`);
   }
   renderBoard(); updateImgCost();
   await imagesPhase();
@@ -776,7 +776,7 @@ $('btnPause').onclick = () => { if (S.busy) { S.stop = true; log('⏸ Rok rahe h
 $('btnMissing').onclick = () => { if (!S.P) return; guard(async () => { if (S.P.mode === 'tts') await voicePhase(); await imagesPhase(); }); };
 $('btnRender').onclick = () => { if (!S.P) return; guard(async () => { if (S.P.mode === 'tts' && S.P.scenes.some(s => !s.aud || s.audStale)) await voicePhase(); await renderPhase(); await finalPhase(); }); };
 $('btnNew').onclick = async () => { if (!confirm('Sab clear ho jayega (storyboard, images, voice, video). Pakka?')) return; await clearAll(); S.P = null; renderBoard(); renderSteps(); projInfo(); log('🗑️ Naya project'); };
-$('btnCopyPrompts').onclick = async () => { if (!S.P) return; const of = +st('accCount'); const acc = +(prompt(`Kaun sa account? (1-${of})`, '1') || 0) - 1; if (acc < 0 || acc >= of) return; const r = promptsText(acc, of); if (!r.ids.length) return alert('Is account ke liye koi image baaki nahi'); await navigator.clipboard.writeText(r.text); alert(`Account ${acc + 1}: scenes #${r.ids[0] + 1} se #${r.ids[r.ids.length - 1] + 1} (${r.ids.length}) ke prompts copy ho gaye. Images ko isi order me download karke 📥 import karo.`); };
+$('btnCopyPrompts').onclick = async () => { if (!S.P) return; const of = +st('accCount'); const acc = +(prompt(`Kaun sa account? (1-${of})`, '1') || 0) - 1; if (acc < 0 || acc >= of) return; const r = promptsText(acc, of); if (!r.ids.length) return alert('Is account ke liye koi image baaki nahi'); try { await navigator.clipboard.writeText(r.text); } catch (e) { prompt('Copy karo:', r.text); } alert(`Account ${acc + 1}: scenes #${r.ids[0] + 1} se #${r.ids[r.ids.length - 1] + 1} (${r.ids.length}) ke prompts copy ho gaye. Images isi order me download karo, phir 📥 se SAARI ek saath select karke upload karo.`); };
 $('btnDlPrompts').onclick = () => { if (!S.P) return; const of = +st('accCount'); let t = ''; for (let a = 0; a < of; a++) t += promptsText(a, of).text + '\n\n==========================\n\n'; const u = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); const l = document.createElement('a'); l.href = u; l.download = 'image_prompts.txt'; l.click(); };
 $('btnImport').onclick = async () => { const fs = await pick('image/*', true); if (fs?.length) importImages(fs); };
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
