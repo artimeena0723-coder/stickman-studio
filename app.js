@@ -7,6 +7,9 @@ const $ = id => document.getElementById(id);
 const $$ = s => [...document.querySelectorAll(s)];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const fmt = s => { s = Math.max(0, s || 0); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = Math.floor(s % 60); return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
+const APP_VER = 'v2.7';
+async function storageInfo() { try { const e = await navigator.storage.estimate(); return `${(e.usage / 1e9).toFixed(2)} GB use / ${(e.quota / 1e9).toFixed(1)} GB limit`; } catch (x) { return 'pata nahi'; } }
+async function purgeExtras() { let n = 0; try { const root = await opfs(); const keep = new Set(Object.keys(S.P?.parts || {}).map(k => `part_${k}.mp4`)); if (!keep.size) return 0; for await (const [name] of root.entries()) { if (!keep.has(name)) { await root.removeEntry(name).catch(() => { }); n++; } } } catch (e) { } return n; }
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const b64 = buf => { let s = '', b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode.apply(null, b.subarray(i, i + 32768)); return btoa(s); };
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -627,7 +630,7 @@ async function renderPhase() {
   const prev = $('cv'), pctx = prev.getContext('2d'); prev.width = P.aspect === '16:9' ? 640 : 360; prev.height = P.aspect === '16:9' ? 360 : 640;
   showTab('export'); await keepAwake(true); const t0 = performance.now(); let framesDone = 0;
   const totalFrames = Math.round(total * fps); const doneFrames = () => Object.keys(P.parts).reduce((s, k) => s + (Math.round(Math.min(total, (+k + 1) * L) * fps) - Math.round(k * L * fps)), 0);
-  log(`🎞️ Render: ${W}x${H}, ${fps}fps, ${fmt(total)}, ${nParts} parts`);
+  log(`💽 Storage: ${await storageInfo()}`); log(`🎞️ Render: ${W}x${H}, ${fps}fps, ${fmt(total)}, ${nParts} parts`);
   for (let p = 0; p < nParts; p++) {
     if (P.parts[p] && await fileExists(`part_${p}.mp4`)) continue; chk();
     const f0 = Math.round(p * L * fps), f1 = Math.round(Math.min(total, (p + 1) * L) * fps);
@@ -664,13 +667,13 @@ async function finalToDisk() {
   if (!Object.keys(S.P.parts || {}).length) return alert('Pehle 🎞️ Render chalao');
   const name = `${(S.P.sheet?.title || 'stickman_video').replace(/[^\w\u0900-\u097F]+/g, '_').slice(0, 40)}.mp4`;
   let h; try { h = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: 'MP4 video', accept: { 'video/mp4': ['.mp4'] } }] }); } catch (e) { return; }
-  guard(async () => { try { await (await opfs()).removeEntry('final.mp4'); } catch (x) { } S.P.finalDone = 0; await finalPhase(h); });
+  guard(async () => { const n = await purgeExtras(); log(`🧹 ${n} purani files hatayi. Storage: ${await storageInfo()}`); S.P.finalDone = 0; await finalPhase(h); });
 }
 async function finalPhaseInner(diskHandle) {
   const P = S.P; if (!diskHandle && P.finalDone && await fileExists('final.mp4')) return showFinal();
   step('final', 'run', 'voice jod rahe hain', 0); const total = P.total, L = P.partLen, nParts = Math.ceil(total / L);
   const acodec = (await MB.canEncodeAudio('aac', { numberOfChannels: 2, sampleRate: 48000, bitrate: 192000 })) ? 'aac' : 'opus';
-  const root = await opfs(); if (!diskHandle) { try { await root.removeEntry('final.mp4'); } catch (x) { } }
+  const root = await opfs(); if (!diskHandle) { await purgeExtras(); log(`💽 Storage: ${await storageInfo()}`); }
   const wr = diskHandle ? await diskHandle.createWritable() : await (await root.getFileHandle('final.mp4', { create: true })).createWritable();
   const out = new MB.Output({ format: new MB.Mp4OutputFormat(), target: new MB.StreamTarget(wr, { chunked: true }) });
   const vsrc = new MB.EncodedVideoPacketSource('avc'); const asrc = new MB.AudioBufferSource({ codec: acodec, bitrate: 192000 });
@@ -833,6 +836,7 @@ $('btnRePrompt').onclick = () => { const P = S.P; if (!P?.scenes?.length) return
     if (!P.sheet) { step('plan', 'run', 'story samajh rahe hain', 0.1); await sheetPhase(P.scenes.map(s => s.text).join(' ')); }
     await promptsPhase(); step('plan', 'done', `${P.scenes.length} scenes`); await saveP(true); renderBoard(); log('✍️ Scene prompts ban gaye — ab 📋 se copy karo'); alert('✅ Prompts ban gaye. Ab 📋 se copy karke images banao.'); }); };
 $('btnFinalDisk').onclick = finalToDisk;
+log(`ℹ️ Stickman Studio ${APP_VER}`);
 if (!window.showSaveFilePicker) $('btnFinalDisk').style.display = 'none';
 $('btnZip').onclick = async () => { const fs = await pick('.zip,application/zip,application/x-zip-compressed,application/octet-stream', true); if (fs?.length) importImages(fs); };
 $('btnImport').onclick = async () => { const fs = await pick('image/*', true); if (fs?.length) importImages(fs); };
