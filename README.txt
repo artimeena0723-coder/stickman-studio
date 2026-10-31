@@ -1,14 +1,13 @@
-STICKMAN STUDIO (Mobile App) - Setup
-====================================
-Ye web-app (PWA) hai: ek baar https link par host karo, phir phone Chrome me kholkar
-menu (⋮) -> "Add to Home screen / Install app". Ab ye app ki tarah chalegi.
+STICKMAN STUDIO v2
+==================
+Link: https://artimeena0723-coder.github.io/stickman-studio/
+Phone Chrome me kholo -> menu (3 dots) -> Add to Home screen.
 
-Setup tab  : 3 Gemini API keys -> Save + Test
-Create tab : stickman reference image(s), background ref (optional), script upload,
-             voice upload, 16:9 / 9:16, 1080p / 4K -> "Poori video banao"
-Storyboard : scene-wise text, prompt, transition edit; 🔄 image dobara; 📤 apni image
-Workflow   : live steps, log, % progress
-Video      : final MP4 download
-
-Tips: long 4K render me time lagta hai — phone charging par, screen on rakho.
-Ek key fail ho toh app khud agli key par switch karti hai. Best: Android + latest Chrome.
+Setup     : 6 tak Gemini API keys (har key alag project se). Optional paid voice key.
+Create    : style preset, scene speed (max 8 sec), size 16:9/9:16, 1080p/4K, reference image,
+            Free image import ya API images, AI voice (script) ya apni voice upload.
+Voice     : Hindi/English, voice test, character voices, emotion auto, voice clone.
+Storyboard: har scene ka text/prompt/transition edit, voice/image dobara, apni image/audio,
+            prompts copy (account-wise), images import.
+Workflow  : live steps, %, log, Pause / Resume.
+Video     : final MP4 download.

@@ -15,47 +15,58 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:84px}
 header{position:sticky;top:0;z-index:5;background:#0c0e12;border-bottom:1px solid var(--line);padding:10px 14px}
-header h1{margin:0;font-size:17px}
+header h1{margin:0;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+header h1 small{font-size:11px;color:var(--mut);font-weight:500}
 .pbar{height:8px;background:#262b35;border-radius:6px;overflow:hidden;margin-top:8px}
 .pbar>div{height:100%;width:0;background:linear-gradient(90deg,var(--acc),#ff7a00);transition:width .3s}
-.pl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-top:4px}
+.pl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-top:4px;gap:8px}
+.pl span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 main{padding:12px;max-width:900px;margin:auto}
 .tab{display:none}.tab.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-.card h2{font-size:15px;margin:0 0 10px}
+.card h2{font-size:15px;margin:0 0 8px}
 label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+label.chk{display:flex;gap:8px;align-items:center;color:var(--txt)}
 input[type=text],input[type=password],input[type=number],textarea,select{width:100%;background:#0f1116;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 textarea{min-height:90px;resize:vertical}
+input[type=file]{width:100%;color:var(--mut);font-size:13px}
 button{background:var(--acc);color:#111;border:0;border-radius:10px;padding:11px 14px;font-weight:700;font-size:14px;cursor:pointer}
 button.sec{background:#2a2f3a;color:var(--txt)}
-button:disabled{opacity:.5}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
-.seg{display:flex;gap:6px}.seg button{flex:1;background:#2a2f3a;color:var(--txt)}.seg button.on{background:var(--acc);color:#111}
+button.red{background:#4a2026;color:#ffb3b3}
+button:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}.row>*{flex:1;min-width:130px}
+.seg{display:flex;gap:6px}.seg button{flex:1;background:#2a2f3a;color:var(--txt);padding:10px 6px;font-size:13px}.seg button.on{background:var(--acc);color:#111}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.thumbs img{width:78px;height:78px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
 .hint{font-size:12px;color:var(--mut)}
+.box{background:#0f1116;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:8px;font-size:13px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0c0e12;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:10px 2px;font-size:11px;font-weight:600}
-nav button b{display:block;font-size:19px}
+nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:9px 1px;font-size:10.5px;font-weight:600}
+nav button b{display:block;font-size:18px}
 nav button.on{color:var(--acc)}
-.scene{display:grid;grid-template-columns:120px 1fr;gap:10px;border-top:1px solid var(--line);padding:12px 0}
-.scene img,.scene .ph{width:120px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0f1116;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px}
-.v916 .scene img,.v916 .scene .ph{aspect-ratio:9/16}
-.scene textarea{min-height:60px;font-size:13px}
-.scene .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.scene .btns button,.scene .btns select{padding:7px 9px;font-size:12px;width:auto;flex:none}
+.scene{display:grid;grid-template-columns:118px 1fr;gap:10px;border-top:1px solid var(--line);padding:12px 0}
+.scene .pic{width:118px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0f1116;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px}
+.v916 .scene .pic{aspect-ratio:9/16}
+.scene textarea{min-height:56px;font-size:13px;padding:8px}
+.scene .btns{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.scene .btns button,.scene .btns select{padding:7px 8px;font-size:12px;width:auto;flex:none}
+.scene .btns button.warn{background:#5a4210;color:#ffd27a}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:20px;background:#2a2f3a;color:var(--mut);margin:3px 3px 0 0}
+.tag.hook{background:#5a2a10;color:#ffb37a}
+.pager{display:flex;gap:6px;align-items:center;justify-content:center;margin:10px 0}.pager button{padding:7px 12px}
 .step{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
 .dot{width:12px;height:12px;border-radius:50%;background:#3a404c;flex:none}
 .dot.run{background:var(--acc);box-shadow:0 0 0 4px #ffb02033;animation:p 1s infinite}.dot.done{background:var(--ok)}.dot.err{background:var(--bad)}
 @keyframes p{50%{opacity:.4}}
-.step .sp{margin-left:auto;font-size:12px;color:var(--mut)}
-#log{font:12px/1.5 ui-monospace,monospace;background:#0b0d11;border-radius:10px;padding:10px;max-height:300px;overflow:auto;white-space:pre-wrap}
+.step .sp{margin-left:auto;font-size:12px;color:var(--mut);text-align:right}
+#log{font:12px/1.5 ui-monospace,monospace;background:#0b0d11;border-radius:10px;padding:10px;max-height:320px;overflow:auto;white-space:pre-wrap}
 .kst{font-size:12px;margin-left:6px}
 video{width:100%;border-radius:12px;background:#000}
 a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:12px;border-radius:10px;font-weight:800;text-decoration:none;margin-top:10px}
+.consent{font-size:14px;background:#14261b;border:1px solid #24563a;color:#bff0d0;padding:10px;border-radius:10px;margin-top:6px}
 </style>
 </head>
 <body>
 <header>
-  <h1>🎬 Stickman Studio</h1>
+  <h1>🎬 Stickman Studio <small id="projInfo"></small></h1>
   <div class="pbar"><div id="pfill"></div></div>
   <div class="pl"><span id="plabel">Ready</span><span id="ppct">0%</span></div>
 </header>
@@ -64,62 +75,146 @@ a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:
 <!-- ============ SETUP ============ -->
 <section class="tab on" id="t-setup">
   <div class="card">
-    <h2>🔑 Gemini API Keys (3 tak)</h2>
-    <div class="hint">aistudio.google.com/apikey se key copy karo. Ek key fail ho toh app khud agli key par switch karega. Keys sirf isi phone me save hoti hain.</div>
+    <h2>🔑 Gemini API Keys (6 tak)</h2>
+    <div class="hint">aistudio.google.com/apikey se key copy karo. Ek key fail ho toh app khud agli key par switch karti hai. Keys sirf isi phone me save hoti hain. Image banane ke liye key par billing ON honi chahiye.</div>
     <label>API Key 1 <span class="kst" id="ks0"></span></label><input type="password" id="k0" autocomplete="off">
     <label>API Key 2 <span class="kst" id="ks1"></span></label><input type="password" id="k1" autocomplete="off">
     <label>API Key 3 <span class="kst" id="ks2"></span></label><input type="password" id="k2" autocomplete="off">
-    <div class="row" style="margin-top:12px"><button onclick="saveKeys(true)">💾 Save + Test</button></div>
+    <label>API Key 4 <span class="kst" id="ks3"></span></label><input type="password" id="k3" autocomplete="off">
+    <label>API Key 5 <span class="kst" id="ks4"></span></label><input type="password" id="k4" autocomplete="off">
+    <label>API Key 6 <span class="kst" id="ks5"></span></label><input type="password" id="k5" autocomplete="off">
+    <div class="box">
+      <label style="margin-top:0">💳 Paid voice key (optional) <span class="kst" id="ksV"></span></label>
+      <input type="password" id="kVoice" autocomplete="off" placeholder="Billing wali Gemini key — sirf voice ke liye">
+      <label class="chk"><input type="checkbox" id="useVoiceKey"> Voice banane me ye paid key use karo (off = free keys)</label>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="btnKeys">💾 Save + Test</button></div>
   </div>
   <div class="card">
-    <h2>⚙️ Models &amp; Language</h2>
+    <h2>⚙️ Advanced (zarurat ho tabhi badlo)</h2>
     <label>Story / analysis model</label><input type="text" id="mText" value="gemini-3.8-flash">
-    <label>Image model</label><input type="text" id="mImg" value="gemini-nano-banana-2.1">
-    <label>Voice (TTS) model — sirf jab voice upload na karo</label><input type="text" id="mTts" value="gemini-3.8-flash-tts">
-    <div class="row">
-      <div><label>Language</label><input type="text" id="lang" value="Hindi"></div>
-      <div><label>AI voice (backup)</label><select id="voiceName"></select></div>
-    </div>
-    <div class="row" style="margin-top:12px"><button class="sec" onclick="saveSettings()">Save settings</button></div>
+    <label>Frame rate</label>
+    <div class="seg" id="fpsSeg"><button data-v="24" class="on">24 fps (fast render)</button><button data-v="30">30 fps</button></div>
+  </div>
+  <div class="card">
+    <h2>🗂️ Project</h2>
+    <div class="hint" id="projStatus">Koi project nahi.</div>
+    <div class="row" style="margin-top:10px"><button class="red" id="btnNew">🗑️ Naya project (sab clear)</button></div>
   </div>
 </section>
 
 <!-- ============ CREATE ============ -->
 <section class="tab" id="t-create">
   <div class="card">
-    <h2>1. Stickman reference image</h2>
-    <div class="hint">Apne character ki 1-3 images do. Isi chehre aur style par saari images banengi.</div>
+    <h2>1. Video style</h2>
+    <label>Style preset</label>
+    <select id="preset">
+      <option value="survival">Survival Story — "You live on the 30th floor..." jaisa</option>
+      <option value="history">History / Explainer — "Ancient humans..." jaisa</option>
+      <option value="custom">Custom (neeche instructions likho)</option>
+    </select>
+    <label>Image kitni jaldi badle (seconds) — min / max</label>
+    <div class="row"><input type="number" id="minSec" value="6" min="2" max="12" step="0.5"><input type="number" id="maxSec" value="8" min="3" max="8" step="0.5"></div>
+    <div class="hint">Image har haal me max 8 sec me badlegi. Survival: 6-8 sec. History/Ink Explainer jaisi fast cuts: 3-5 sec.</div>
+    <label>Extra instructions (optional)</label>
+    <input type="text" id="notes" placeholder="jaise: dark mysterious mood, Mughal era, emotions zyada">
+    <div class="row">
+      <div><label>Size</label><div class="seg" id="aspSeg"><button data-v="16:9" class="on">16:9 YouTube</button><button data-v="9:16">9:16 Shorts</button></div></div>
+    </div>
+    <div class="row">
+      <div><label>Video quality</label><div class="seg" id="resSeg"><button data-v="1080">1080p</button><button data-v="4k" class="on">4K</button></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Stickman character</h2>
+    <div class="hint">Apne character ki 1-3 reference images do. Isi chehre aur style par saari images banengi.</div>
     <input type="file" id="refIn" accept="image/*" multiple style="margin-top:8px">
     <div class="thumbs" id="refThumbs"></div>
-    <label>Background reference (optional)</label>
+    <label>Background / style reference (optional)</label>
     <input type="file" id="bgIn" accept="image/*">
     <div class="thumbs" id="bgThumbs"></div>
   </div>
+
   <div class="card">
-    <h2>2. Script</h2>
-    <input type="file" id="scriptIn" accept=".txt,.md,.srt,text/plain">
-    <label>Ya yahan paste karo</label>
-    <textarea id="script" placeholder="Apni poori script..." style="min-height:150px"></textarea>
-    <div class="row" style="margin-top:8px"><button class="sec" onclick="scriptDoctor()">✨ Hook + Storytelling improve karo</button></div>
-    <div class="hint">Isse pehle 1 minute me strong hook aur engaging storytelling wali script ban jayegi. Phir isi script par voice record karke upload karo.</div>
+    <h2>3. Images</h2>
+    <div class="seg" id="imgSrcSeg"><button data-v="import" class="on">🆓 Free: main import karunga</button><button data-v="api">⚡ API se auto (billing)</button></div>
+    <div class="hint" id="imgSrcHint" style="margin-top:6px">Free mode: app har scene ka prompt degi. Gemini app / Flow me reference image ke saath images banao, phir Storyboard me 📥 se ek saath import karo.</div>
+    <label class="chk"><input type="checkbox" id="cropLogo" checked> Gemini star logo hatao (corner crop)</label>
+    <label>Image model (API mode)</label>
+    <select id="imgModel">
+      <option value="gemini-nano-banana-2.1">Nano Banana 2.1 — fast, sasta, best consistency</option>
+      <option value="gemini-3-pro-image">Nano Banana Pro — premium quality (mehenga)</option>
+      <option value="gemini-3.1-flash-image">Nano Banana 2</option>
+    </select>
+    <label>Image resolution</label>
+    <div class="seg" id="imgSizeSeg"><button data-v="2K">2K</button><button data-v="4K" class="on">4K</button></div>
+    <div class="hint" id="imgCost"></div>
+  </div>
+
+  <div class="card">
+    <h2>4. Voice ka source</h2>
+    <div class="seg" id="modeSeg"><button data-v="tts" class="on">🤖 AI voice (script se)</button><button data-v="upload">🎤 Meri voice upload</button></div>
+    <div id="modeTts">
+      <div class="hint" style="margin-top:8px">Script do — app usse padhkar voice-over banayegi. Voice <b>🎙️ Voice</b> tab me chuno aur test karo.</div>
+      <label>Script file (.txt) — ya neeche paste karo</label>
+      <input type="file" id="scriptIn" accept=".txt,.md,.srt,text/plain">
+      <textarea id="script" placeholder="Poori script yahan paste karo — kitni bhi lambi ho" style="min-height:170px;margin-top:8px"></textarea>
+      <div class="hint" id="scriptInfo"></div>
+      <div class="row" style="margin-top:8px"><button class="sec" id="btnHook">✨ Pehle 1 min ka hook strong karo</button></div>
+    </div>
+    <div id="modeUpload" style="display:none">
+      <div class="hint" style="margin-top:8px">Apni voice (mp3/wav/m4a) ya video file do. Script ki zarurat nahi — app khud sunkar scenes aur images banayegi.</div>
+      <input type="file" id="voiceIn" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.mp4" style="margin-top:8px">
+      <div class="hint" id="voiceInfo"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="enh" checked> Voice enhance (clear, loud, studio feel)</label>
+  </div>
+
+  <div class="card">
+    <button id="btnRun" style="width:100%;padding:15px;font-size:16px">🚀 Poori video banao</button>
+    <div class="hint" style="margin-top:8px">Kaam beech me ruk jaye toh <b>Workflow</b> tab se ▶ Resume dabao — wahi se shuru hoga. Phone charging par aur app screen par khuli rakho.</div>
+  </div>
+</section>
+
+<!-- ============ VOICE ============ -->
+<section class="tab" id="t-voice">
+  <div class="card">
+    <h2>🎙️ AI Voice</h2>
+    <div class="row">
+      <div><label>Language</label><select id="lang"><option value="hi">Hindi</option><option value="en">English</option></select></div>
+      <div><label>Voice model</label><select id="ttsModel"><option value="gemini-3.8-flash-tts">Flash TTS — best quality</option><option value="gemini-3.8-flash-lite-tts">Flash-Lite TTS — fast</option></select></div>
+    </div>
+    <label>Voice character</label>
+    <select id="voiceSel"></select>
+    <div class="row" style="margin-top:6px"><button class="sec" id="btnLib">🔎 Language ki aur voices load karo</button></div>
+    <label>Bolne ka style</label>
+    <input type="text" id="vStyle">
+    <label>Test line</label>
+    <textarea id="testText" style="min-height:60px"></textarea>
+    <div class="row" style="margin-top:8px"><button id="btnTest">▶ Voice test karo</button></div>
+    <audio id="testAudio" controls style="width:100%;margin-top:8px;display:none"></audio>
   </div>
   <div class="card">
-    <h2>3. Voice</h2>
-    <input type="file" id="voiceIn" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg">
-    <div class="hint" id="voiceInfo">Apni recorded voice upload karo. Upload na karo toh AI voice banegi.</div>
-    <label><input type="checkbox" id="enh" checked> Voice enhance (clear + loud + studio feel)</label>
-    <audio id="voicePrev" controls style="width:100%;margin-top:8px;display:none"></audio>
+    <h2>🎭 Emotion &amp; characters</h2>
+    <label class="chk"><input type="checkbox" id="autoEmo" checked> Har line ka emotion khud samjho (gussa, shant, darr, khushi...)</label>
+    <label class="chk"><input type="checkbox" id="autoCast" checked> Characters ke dialogue alag-alag voice me</label>
+    <div class="hint">Storyboard banne par app characters dhundh kar unhe voice de degi. Yahan badal sakte ho. Narrator = upar wali voice.</div>
+    <div id="castList" class="box">Abhi koi character nahi.</div>
   </div>
   <div class="card">
-    <h2>4. Video size &amp; quality</h2>
-    <label>Size</label>
-    <div class="seg" id="aspSeg"><button data-v="16:9" class="on">16:9 YouTube</button><button data-v="9:16">9:16 Shorts/Reels</button></div>
-    <label>Quality</label>
-    <div class="seg" id="resSeg"><button data-v="1080">1080p (fast)</button><button data-v="4k" class="on">4K</button></div>
-    <label>Scene length (seconds)</label><input type="number" id="sceneLen" value="6" min="3" max="15">
-    <label>Extra instructions (optional)</label><input type="text" id="notes" placeholder="jaise: dark mysterious mood, emotions zyada">
-    <div class="row" style="margin-top:12px"><button onclick="runAll()">🚀 Poori video banao (auto)</button></div>
-    <div class="row" style="margin-top:8px"><button class="sec" onclick="guard(stepAnalyse)">Sirf Storyboard banao</button></div>
+    <h2>🧬 Voice clone (apni ya kisi ki permission wali voice)</h2>
+    <div class="hint">Google ke rule: 10-30 sec saaf awaaz ka sample + usi insaan ki consent recording. Clone har API key ke project me ban jayega taaki key switch hone par bhi wahi voice rahe.</div>
+    <label>Voice ka naam</label><input type="text" id="cloneName" placeholder="jaise: Meri Voice">
+    <label>Sample (10-30 sec)</label>
+    <div class="row"><input type="file" id="cloneSrc" accept="audio/*"><button class="sec" id="recSrc">⏺ Record</button></div>
+    <div class="hint" id="srcInfo"></div>
+    <label>Consent recording — ye line padhkar record karo:</label>
+    <div class="consent" id="consentText"></div>
+    <div class="row" style="margin-top:6px"><input type="file" id="cloneCon" accept="audio/*"><button class="sec" id="recCon">⏺ Record</button></div>
+    <div class="hint" id="conInfo"></div>
+    <div class="row" style="margin-top:10px"><button id="btnClone">🧬 Clone banao</button></div>
+    <div class="box">AI Studio me pehle se clone kiya hai? Usi API key se <button class="sec" id="btnMine" style="padding:7px 10px">📥 Meri voices load karo</button></div>
   </div>
 </section>
 
@@ -127,18 +222,35 @@ a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:
 <section class="tab" id="t-board">
   <div class="card">
     <h2>🖼️ Storyboard — scene-wise edit</h2>
-    <div class="hint">Har scene ka text, image prompt aur transition badal sakte ho. 🔄 se sirf woh image dobara banegi, 📤 se apni image laga sakte ho.</div>
+    <div class="hint">Text, image prompt, transition badlo. 🔄 image dobara, 📤 apni image, ▶ voice suno, 🎙️ us part ki voice dobara banao, 🎵 us part ki apni audio lagao.</div>
     <div class="row" style="margin-top:10px">
-      <button onclick="genAllImages()">Baaki images banao</button>
-      <button class="sec" onclick="stepRender()">🎞️ Final video render</button>
+      <button class="sec" id="btnMissing">Baaki images/voice banao</button>
     </div>
+    <div class="row" style="margin-top:8px">
+      <div><label>Kitne Flow/Gemini accounts</label><select id="accCount"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="sec" id="btnCopyPrompts">📋 Account ke prompts copy</button>
+      <button class="sec" id="btnDlPrompts">⬇️ prompts.txt</button>
+      <button class="sec" id="btnImport">📥 Images import</button>
+    </div>
+    <div class="hint" id="importHint" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:8px">
+      <button id="btnRender">🎞️ Final video render</button>
+    </div>
+    <div class="pager" id="pagerTop"></div>
     <div id="scenes"></div>
+    <div class="pager" id="pagerBot"></div>
   </div>
 </section>
 
 <!-- ============ WORKFLOW ============ -->
 <section class="tab" id="t-flow">
-  <div class="card"><h2>🧭 Workflow — abhi kya chal raha hai</h2><div id="steps"></div></div>
+  <div class="card">
+    <h2>🧭 Workflow — abhi kya chal raha hai</h2>
+    <div id="steps"></div>
+    <div class="row" style="margin-top:10px"><button id="btnResume">▶ Resume</button><button class="sec" id="btnPause">⏸ Pause</button></div>
+  </div>
   <div class="card"><h2>📜 Live log</h2><div id="log"></div></div>
 </section>
 
@@ -146,14 +258,10 @@ a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:
 <section class="tab" id="t-export">
   <div class="card">
     <h2>📦 Final video</h2>
-    <div class="hint" id="expInfo">Render hone ke baad video yahan aayegi. Long 4K video me time lagta hai — phone charging par aur screen on rakho.</div>
-    <canvas id="cv" style="width:100%;border-radius:12px;margin-top:10px;background:#000"></canvas>
+    <div class="hint" id="expInfo">Render hone ke baad video yahan aayegi.</div>
+    <canvas id="cv" width="640" height="360" style="width:100%;border-radius:12px;margin-top:10px;background:#000"></canvas>
     <video id="outVid" controls playsinline style="display:none;margin-top:10px"></video>
     <div id="dlBox"></div>
-  </div>
-  <div class="card">
-    <h2>💾 Project</h2>
-    <div class="row"><button class="sec" onclick="saveProject()">Project save</button><button class="sec" onclick="loadProject()">Pichhla project kholo</button></div>
   </div>
 </section>
 </main>
@@ -161,463 +269,11 @@ a.dl{display:block;text-align:center;background:var(--ok);color:#06210f;padding:
 <nav>
   <button class="on" data-t="setup"><b>🔑</b>Setup</button>
   <button data-t="create"><b>✍️</b>Create</button>
+  <button data-t="voice"><b>🎙️</b>Voice</button>
   <button data-t="board"><b>🖼️</b>Storyboard</button>
   <button data-t="flow"><b>🧭</b>Workflow</button>
   <button data-t="export"><b>📦</b>Video</button>
 </nav>
-
-<script src="mp4-muxer.min.js"></script>
-<script>
-"use strict";
-/* ===================== state ===================== */
-const API = "https://generativelanguage.googleapis.com/v1beta";
-const VOICES = ["Charon","Kore","Puck","Zephyr","Fenrir","Leda","Orus","Aoede","Callirrhoe","Autonoe","Enceladus","Iapetus","Umbriel","Algieba","Despina","Erinome","Algenib","Rasalgethi","Laomedeia","Achernar","Alnilam","Schedar","Gacrux","Pulcherrima","Achird","Zubenelgenubi","Vindemiatrix","Sadachbia","Sadaltager","Sulafat"];
-const TRANS = ["fade","slide","push","zoom","circle"];
-const S = {
-  keys: [], keyIdx: 0, refs: [], bg: null, voiceFile: null, voiceBuf: null,
-  aspect: "16:9", res: "4k", sheet: null, scenes: [], busy: false, fileCache: {}
-};
-const $ = id => document.getElementById(id);
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const $$ = sel => [...document.querySelectorAll(sel)];
-
-/* ===================== UI basics ===================== */
-$$("nav button").forEach(b => b.onclick = () => showTab(b.dataset.t));
-function showTab(t){ $$("nav button").forEach(x=>x.classList.toggle("on",x.dataset.t===t)); $$(".tab").forEach(x=>x.classList.toggle("on",x.id==="t-"+t)); }
-function seg(id, key){ $$("#"+id+" button").forEach(b=>b.onclick=()=>{ $$("#"+id+" button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); S[key]=b.dataset.v; document.body.classList.toggle("v916",S.aspect==="9:16"); localStorage.setItem("ss_"+key,S[key]); }); }
-seg("aspSeg","aspect"); seg("resSeg","res");
-VOICES.forEach(v=>{const o=document.createElement("option");o.textContent=v;$("voiceName").appendChild(o);});
-
-function setProgress(p, label){ p=Math.max(0,Math.min(100,p)); $("pfill").style.width=p+"%"; $("ppct").textContent=Math.floor(p)+"%"; if(label) $("plabel").textContent=label; }
-function log(m){ const t=new Date().toLocaleTimeString(); const el=$("log"); el.textContent+=`[${t}] ${m}\n`; el.scrollTop=el.scrollHeight; }
-const STEPS = [["keys","API keys check"],["analyse","Script samajhna + storyboard"],["voice","Voice ready + enhance"],["images","Stickman images"],["render","Video render (transitions)"],["done","Final video"]];
-const stepState = {};
-function step(id, st, sub){ stepState[id]={st,sub:sub||""}; renderSteps(); if(st==="run") $("plabel").textContent=(STEPS.find(s=>s[0]===id)||[,""])[1]+(sub?" — "+sub:""); }
-function renderSteps(){ $("steps").innerHTML = STEPS.map(([id,name])=>{const s=stepState[id]||{st:""};return `<div class="step"><span class="dot ${s.st}"></span><span>${name}</span><span class="sp">${s.sub||({done:"✓",err:"error"}[s.st]||"")}</span></div>`}).join(""); }
-renderSteps();
-let wakeLock=null;
-async function keepAwake(on){ try{ if(on && "wakeLock" in navigator) wakeLock=await navigator.wakeLock.request("screen"); else if(!on && wakeLock){ await wakeLock.release(); wakeLock=null; } }catch(e){} }
-
-/* ===================== settings ===================== */
-function loadSettings(){
-  const k=JSON.parse(localStorage.getItem("ss_keys")||"[]"); [0,1,2].forEach(i=>$("k"+i).value=k[i]||"");
-  ["mText","mImg","mTts","lang","voiceName"].forEach(id=>{const v=localStorage.getItem("ss_"+id); if(v) $(id).value=v;});
-  ["aspect","res"].forEach(key=>{const v=localStorage.getItem("ss_"+key); if(v){ S[key]=v; $$(`#${key==="aspect"?"aspSeg":"resSeg"} button`).forEach(b=>b.classList.toggle("on",b.dataset.v===v)); }});
-  document.body.classList.toggle("v916",S.aspect==="9:16");
-  S.keys=k.filter(Boolean);
-}
-function saveSettings(){ ["mText","mImg","mTts","lang","voiceName"].forEach(id=>localStorage.setItem("ss_"+id,$(id).value.trim())); log("Settings saved"); }
-async function saveKeys(test){
-  const k=[0,1,2].map(i=>$("k"+i).value.trim()); localStorage.setItem("ss_keys",JSON.stringify(k)); S.keys=k.filter(Boolean); S.keyIdx=0; saveSettings();
-  if(!test) return;
-  step("keys","run");
-  for(let i=0;i<3;i++){ const el=$("ks"+i); if(!k[i]){el.textContent="";continue;} el.textContent="⏳";
-    try{ const r=await fetch(`${API}/models/${$("mText").value.trim()}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":k[i]},body:JSON.stringify({contents:[{parts:[{text:"Reply OK"}]}]})});
-      el.textContent = r.ok?"✅ chal rahi hai":"❌ "+r.status; el.style.color=r.ok?"var(--ok)":"var(--bad)"; log(`Key ${i+1}: ${r.ok?"OK":"fail "+r.status}`);
-    }catch(e){ el.textContent="❌ network"; el.style.color="var(--bad)"; }
-  }
-  step("keys", S.keys.length?"done":"err", S.keys.length+" key");
-}
-loadSettings();
-
-/* ===================== Gemini with auto key switch ===================== */
-class Fatal extends Error{}
-async function gemini(model, bodyFn, label){
-  if(!S.keys.length) throw new Fatal("Setup me kam se kam 1 API key daalo.");
-  let last="";
-  for(let round=0; round<4; round++){
-    for(let a=0; a<S.keys.length; a++){
-      const ki=S.keyIdx, key=S.keys[ki];
-      try{
-        const body = await bodyFn(key);
-        const r = await fetch(`${API}/models/${model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)});
-        const txt = await r.text();
-        if(r.ok){ const j=JSON.parse(txt); if(j.candidates && j.candidates.length) return j; last="empty/blocked response"; }
-        else { last=`${r.status}: ${txt.slice(0,160)}`;
-          if(r.status===400 && !/key|quota|billing|exhaust|location|permission/i.test(txt)) throw new Fatal(`${label}: ${last}`);
-          if(r.status===404) throw new Fatal(`${label}: model "${model}" nahi mila. Setup me model naam check karo.`);
-        }
-      }catch(e){ if(e instanceof Fatal) throw e; last=e.message; }
-      if(S.keys.length>1){ S.keyIdx=(ki+1)%S.keys.length; log(`⚠️ ${label}: Key ${ki+1} fail (${last.slice(0,70)}) → Key ${S.keyIdx+1} par switch`); }
-      else log(`⚠️ ${label}: retry (${last.slice(0,70)})`);
-    }
-    await sleep(6000*(round+1));
-  }
-  throw new Error(`${label} fail: ${last}`);
-}
-const partsOf = j => (j.candidates?.[0]?.content?.parts)||[];
-const textOf = j => partsOf(j).map(p=>p.text||"").join("");
-function parseJSON(t){ const m=t.match(/\{[\s\S]*\}/); return JSON.parse(m?m[0]:t); }
-
-/* file upload (Files API) — per key, kyunki file usi project me rehti hai */
-async function uploadFile(key, blob, name){
-  const ck = key+"|"+name+"|"+blob.size; if(S.fileCache[ck]) return S.fileCache[ck];
-  const start = await fetch("https://generativelanguage.googleapis.com/upload/v1beta/files",{method:"POST",headers:{"x-goog-api-key":key,"X-Goog-Upload-Protocol":"resumable","X-Goog-Upload-Command":"start","X-Goog-Upload-Header-Content-Length":String(blob.size),"X-Goog-Upload-Header-Content-Type":blob.type||"audio/mpeg","Content-Type":"application/json"},body:JSON.stringify({file:{display_name:name}})});
-  const url = start.headers.get("x-goog-upload-url"); if(!url) throw new Error("upload start fail "+start.status);
-  const up = await fetch(url,{method:"POST",headers:{"X-Goog-Upload-Command":"upload, finalize","X-Goog-Upload-Offset":"0"},body:blob});
-  let f=(await up.json()).file;
-  for(let i=0;i<100 && f.state==="PROCESSING";i++){ await sleep(3000); f=await (await fetch(`${API}/${f.name}`,{headers:{"x-goog-api-key":key}})).json(); }
-  if(f.state==="FAILED") throw new Error("audio process fail");
-  S.fileCache[ck]={mime:f.mimeType,uri:f.uri}; return S.fileCache[ck];
-}
-const b64 = buf => { let s="",b=new Uint8Array(buf); for(let i=0;i<b.length;i+=32768) s+=String.fromCharCode.apply(null,b.subarray(i,i+32768)); return btoa(s); };
-const unb64 = s => Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function fileToPart(file){ return {mime:file.type||"image/png", data:b64(await file.arrayBuffer())}; }
-
-/* ===================== inputs ===================== */
-$("refIn").onchange = async e => { S.refs=[]; $("refThumbs").innerHTML=""; for(const f of [...e.target.files].slice(0,3)){ S.refs.push(await fileToPart(f)); addThumb("refThumbs",f);} log(`${S.refs.length} reference image add hui`); };
-$("bgIn").onchange = async e => { const f=e.target.files[0]; $("bgThumbs").innerHTML=""; S.bg=f?await fileToPart(f):null; if(f) addThumb("bgThumbs",f); };
-function addThumb(id,f){ const i=document.createElement("img"); i.src=URL.createObjectURL(f); $(id).appendChild(i); }
-$("scriptIn").onchange = async e => { const f=e.target.files[0]; if(f){ $("script").value=await f.text(); log("Script upload hui: "+f.name); } };
-$("voiceIn").onchange = e => { const f=e.target.files[0]; S.voiceFile=f||null; S.voiceBuf=null; if(f){ $("voicePrev").src=URL.createObjectURL(f); $("voicePrev").style.display="block"; $("voiceInfo").textContent="Voice: "+f.name+" ("+(f.size/1e6).toFixed(1)+" MB)"; } };
-
-/* ===================== Script doctor (hook) ===================== */
-async function scriptDoctor(){
-  const sc=$("script").value.trim(); if(!sc) return alert("Pehle script daalo");
-  await guard(async()=>{
-    step("analyse","run","script improve");
-    const prompt=`You are a top YouTube scriptwriter for faceless stickman storytelling channels.
-Rewrite the script below in ${$("lang").value} so that:
-- The first 15-60 seconds are a powerful HOOK (curiosity, stakes, a question or shocking moment) that makes viewers stay.
-- Clear story arc: hook → setup → rising tension → twist/climax → payoff → short call to action.
-- Short spoken sentences, conversational, high retention, open loops that pay off later.
-- Keep all the facts/story of the original. Same language. Return ONLY the final narration text, no headings, no stage directions.
-
-SCRIPT:
-${sc}`;
-    const j=await gemini($("mText").value.trim(),()=>({contents:[{parts:[{text:prompt}]}]}),"Script improve");
-    $("script").value=textOf(j).trim(); step("analyse","done","script ready"); log("✨ Script improve ho gayi (hook + storytelling). Ab isi par voice record karo.");
-  });
-}
-
-/* ===================== Audio: decode + enhance ===================== */
-async function decodeAudio(arrBuf){ const ac=new (window.AudioContext||window.webkitAudioContext)(); const b=await ac.decodeAudioData(arrBuf.slice(0)); ac.close(); return b; }
-async function enhance(buf){
-  const sr=48000, len=Math.ceil(buf.duration*sr);
-  const oc=new OfflineAudioContext(2,len,sr);
-  const src=oc.createBufferSource(); src.buffer=buf;
-  const hp=oc.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=80;
-  const mud=oc.createBiquadFilter(); mud.type="peaking"; mud.frequency.value=280; mud.Q.value=1; mud.gain.value=-2.5;
-  const pres=oc.createBiquadFilter(); pres.type="peaking"; pres.frequency.value=3200; pres.Q.value=0.9; pres.gain.value=3.5;
-  const air=oc.createBiquadFilter(); air.type="highshelf"; air.frequency.value=10000; air.gain.value=2;
-  const warm=oc.createBiquadFilter(); warm.type="lowshelf"; warm.frequency.value=150; warm.gain.value=1.5;
-  const comp=oc.createDynamicsCompressor(); comp.threshold.value=-22; comp.knee.value=8; comp.ratio.value=3.5; comp.attack.value=0.004; comp.release.value=0.18;
-  src.connect(hp); hp.connect(mud); mud.connect(warm); warm.connect(pres); pres.connect(air); air.connect(comp); comp.connect(oc.destination);
-  src.start(); const out=await oc.startRendering();
-  let peak=0; for(let c=0;c<out.numberOfChannels;c++){ const d=out.getChannelData(c); for(let i=0;i<d.length;i++){const v=Math.abs(d[i]); if(v>peak) peak=v;} }
-  const g = peak>0 ? 0.89/peak : 1; for(let c=0;c<out.numberOfChannels;c++){ const d=out.getChannelData(c); for(let i=0;i<d.length;i++) d[i]*=g; }
-  return out;
-}
-function toStereo48(buf){ // resample/up-mix via OfflineAudioContext without effects
-  const oc=new OfflineAudioContext(2,Math.ceil(buf.duration*48000),48000); const s=oc.createBufferSource(); s.buffer=buf; s.connect(oc.destination); s.start(); return oc.startRendering();
-}
-function wavFromPcm(pcm){ const h=new ArrayBuffer(44), v=new DataView(h), n=pcm.length; const w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
-  w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVE"); w(12,"fmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,24000,true); v.setUint32(28,48000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n,true);
-  const o=new Uint8Array(44+n); o.set(new Uint8Array(h)); o.set(pcm,44); return o.buffer; }
-
-/* ===================== STEP 1: analyse → storyboard ===================== */
-async function stepAnalyse(){
-  const script=$("script").value.trim();
-  if(!script && !S.voiceFile) throw new Fatal("Script ya voice me se kam se kam ek do.");
-  if(!S.refs.length) throw new Fatal("Stickman reference image upload karo (Create tab).");
-  step("analyse","run");
-  setProgress(3,"Script samajh rahe hain");
-  let dur=0;
-  if(S.voiceFile){ const raw=await decodeAudio(await S.voiceFile.arrayBuffer()); dur=raw.duration; S.rawVoice=raw; log(`Voice length: ${fmt(dur)}`); }
-  const secs=+$("sceneLen").value||6;
-  const prompt=`You are the director of a high-retention faceless STICKMAN storytelling YouTube channel.
-${S.voiceFile?`The attached audio is the final narration (${dur.toFixed(1)} s). Split it into scenes using the audio timing.`:"There is no audio yet; an AI voice will read the script."}
-${script?"SCRIPT:\n"+script:"Transcribe the narration from the audio."}
-
-Look at the attached reference image(s): that is THE main stickman character. Describe him precisely so every image keeps the SAME face identity.
-Return ONLY JSON:
-{"title":"...",
- "character_sheet":"very precise, fixed description of the character (head shape, eyes, eyebrows, mouth style, line thickness, colours, clothes/accessories) copied from the reference",
- "world_sheet":"fixed description of the art style + background world (palette, lighting, environment) to keep backgrounds consistent",
- "voice_style":"short narration delivery style",
- "hook_note":"one line: how the first 60 seconds hook the viewer",
- "scenes":[{"text":"exact narration words of this scene","start":0.0,"end":0.0,"image_prompt":"concrete visual: what the character does, emotion, props, setting, camera shot (wide/medium/close-up)","transition":"fade|slide|push|zoom|circle"}]}
-Rules:
-- Cover the ENTIRE narration in order, verbatim, nothing skipped. Each scene ≈ ${secs} seconds of speech (${Math.round(secs*2.4)}-${Math.round(secs*3)} words).
-- ${S.voiceFile?"start/end = exact seconds in the audio, continuous, last end = "+dur.toFixed(1):"start/end = 0"}.
-- First 60 seconds = HOOK: most dramatic, curiosity-driven visuals, faster cuts, close-ups and big emotions.
-- Vary shots and actions so the video stays engaging; same character and same world every time.
-- Pick varied transitions; use "zoom" or "push" for dramatic moments, "fade" for calm ones.
-- image_prompt in English. text in the narration language (${$("lang").value}).
-${$("notes").value?"Extra: "+$("notes").value:""}`;
-  const j = await gemini($("mText").value.trim(), async key=>{
-    const parts=[];
-    S.refs.forEach(r=>parts.push({inline_data:{mime_type:r.mime,data:r.data}}));
-    if(S.voiceFile){
-      if(S.voiceFile.size<14e6) parts.push({inline_data:{mime_type:S.voiceFile.type||"audio/mpeg",data:b64(await S.voiceFile.arrayBuffer())}});
-      else { log("Badi audio file — Gemini par upload ho rahi hai..."); const f=await uploadFile(key,S.voiceFile,"narration"); parts.push({file_data:{mime_type:f.mime,file_uri:f.uri}}); }
-    }
-    parts.push({text:prompt});
-    return {contents:[{parts}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:65536}};
-  },"Storyboard");
-  const d=parseJSON(textOf(j));
-  S.sheet={title:d.title,character:d.character_sheet,world:d.world_sheet,voiceStyle:d.voice_style||"engaging storytelling",hook:d.hook_note};
-  S.scenes=(d.scenes||[]).filter(s=>(s.text||"").trim()).map((s,i)=>({id:i,text:s.text.trim(),prompt:s.image_prompt||s.text,start:+s.start||0,end:+s.end||0,trans:TRANS.includes(s.transition)?s.transition:TRANS[i%TRANS.length],img:null,url:null,w:0,h:0}));
-  if(!S.scenes.length) throw new Error("Storyboard khali aaya, dobara try karo.");
-  if(S.voiceFile) fixTimings(dur);
-  log(`🎬 ${S.scenes.length} scenes ready. Hook: ${S.sheet.hook||"-"}`);
-  step("analyse","done",S.scenes.length+" scenes"); setProgress(10,"Storyboard ready");
-  renderBoard(); saveProject(true);
-}
-function fixTimings(dur){
-  const sc=S.scenes; let ok=sc[0].start<=1.5 && sc.every((s,i)=>s.end>s.start && (i===0||s.start>=sc[i-1].start)) && Math.abs(sc[sc.length-1].end-dur)<Math.max(5,dur*0.05);
-  if(!ok){ // text length ke hisaab se baant do
-    log("Timing AI se sahi nahi mili — text length ke hisaab se set kar rahe hain");
-    const tot=sc.reduce((a,s)=>a+s.text.length,0); let t=0; sc.forEach(s=>{s.start=t; t+=dur*s.text.length/tot; s.end=t;});
-  }
-  sc.forEach((s,i)=>{ if(i>0) s.start=sc[i-1].end; }); sc[0].start=0; sc[sc.length-1].end=dur;
-}
-const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}`;
-
-/* ===================== Storyboard UI ===================== */
-function renderBoard(){
-  $("scenes").innerHTML = S.scenes.map((s,i)=>`
-  <div class="scene" id="sc${i}">
-    <div>${s.url?`<img src="${s.url}">`:`<div class="ph">Scene ${i+1}</div>`}<div class="hint">${fmt(s.start)}–${fmt(s.end)}</div></div>
-    <div>
-      <textarea onchange="S.scenes[${i}].text=this.value">${esc(s.text)}</textarea>
-      <textarea onchange="S.scenes[${i}].prompt=this.value" style="margin-top:6px" placeholder="image prompt">${esc(s.prompt)}</textarea>
-      <div class="btns">
-        <button class="sec" onclick="regen(${i})">🔄 Image</button>
-        <button class="sec" onclick="replaceImg(${i})">📤 Apni image</button>
-        <select onchange="S.scenes[${i}].trans=this.value">${TRANS.map(t=>`<option ${t===s.trans?"selected":""}>${t}</option>`).join("")}</select>
-      </div>
-    </div>
-  </div>`).join("");
-}
-function updateSceneCard(i){ const s=S.scenes[i], el=$("sc"+i); if(!el) return renderBoard(); const box=el.firstElementChild; box.firstElementChild.outerHTML=`<img src="${s.url}">`; }
-const esc = t => String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function replaceImg(i){ const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; await setSceneImg(i,f); log(`Scene ${i+1}: apni image lagayi`); }; inp.click(); }
-async function setSceneImg(i,blob){ const s=S.scenes[i]; if(s.url) URL.revokeObjectURL(s.url); s.img=blob; s.url=URL.createObjectURL(blob); const bm=await createImageBitmap(blob); s.w=bm.width; s.h=bm.height; bm.close(); updateSceneCard(i); }
-async function regen(i){ await guard(async()=>{ step("images","run",`scene ${i+1}`); await genImage(i); step("images","done"); saveProject(true); }); }
-
-/* ===================== images ===================== */
-async function genImage(i){
-  const s=S.scenes[i], first=S.scenes.find(x=>x.img && x!==s);
-  const parts=[];
-  S.refs.forEach(r=>parts.push({inline_data:{mime_type:r.mime,data:r.data}}));
-  let bgNote="";
-  if(S.bg){ parts.push({inline_data:{mime_type:S.bg.mime,data:S.bg.data}}); bgNote="The LAST attached image is the background/world reference: match its style, palette and environment."; }
-  else if(first){ const d=b64(await first.img.arrayBuffer()); parts.push({inline_data:{mime_type:first.img.type||"image/png",data:d}}); bgNote="The LAST attached image is an earlier frame of this same video: keep the identical art style, palette, line weight and world."; }
-  parts.push({text:`Create one ${S.aspect} frame for a stickman storytelling video.
-CHARACTER: the first ${S.refs.length} attached image(s) show THE main character. Keep EXACTLY the same face identity (head shape, eyes, eyebrows, mouth style), body proportions, line thickness and colours. Character sheet: ${S.sheet?.character||""}
-WORLD: ${S.sheet?.world||"clean minimal 2D stickman style"}. ${bgNote}
-SCENE: ${s.prompt}
-(Narration for context: "${s.text.slice(0,300)}")
-Strictly: no text, no letters, no captions, no speech bubbles, no logos, no watermark, no sparkle/star icon, no border. Fill the whole frame.`});
-  const size = S.res==="4k"?"4K":"2K";
-  let useSize=true;
-  const j = await gemini($("mImg").value.trim(), ()=>({contents:[{parts}],generationConfig:{responseModalities:["IMAGE"],imageConfig: useSize?{aspectRatio:S.aspect,imageSize:size}:{aspectRatio:S.aspect}}}), `Image ${i+1}`)
-    .catch(async e=>{ if(/imageSize|image_size|Invalid/i.test(e.message)){ useSize=false; return gemini($("mImg").value.trim(), ()=>({contents:[{parts}],generationConfig:{responseModalities:["IMAGE"],imageConfig:{aspectRatio:S.aspect}}}), `Image ${i+1}`);} throw e; });
-  const p=partsOf(j).find(p=>(p.inline_data||p.inlineData));
-  if(!p) throw new Error(`Scene ${i+1} ki image nahi aayi (safety block?). Prompt badal kar 🔄 dabao.`);
-  const d=p.inline_data||p.inlineData;
-  await setSceneImg(i,new Blob([unb64(d.data)],{type:d.mime_type||d.mimeType||"image/png"}));
-}
-async function genAllImages(){
-  await guard(async()=>{
-    if(!S.scenes.length) throw new Fatal("Pehle storyboard banao.");
-    await imagesPhase(); saveProject(true);
-  });
-}
-async function imagesPhase(){
-  const todo=S.scenes.map((s,i)=>i).filter(i=>!S.scenes[i].img);
-  const total=S.scenes.length; let done=total-todo.length;
-  step("images","run",`${done}/${total}`);
-  const upd=()=>{ step("images","run",`${done}/${total}`); setProgress(15+55*done/total,`Images ${done}/${total}`); };
-  upd();
-  if(todo.length && !S.scenes.some(s=>s.img)){ await genImage(todo.shift()); done++; upd(); } // pehli image = style anchor
-  const workers=Math.min(3,Math.max(1,S.keys.length+1)); let errs=[];
-  await Promise.all([...Array(workers)].map(async()=>{ while(todo.length){ const i=todo.shift(); try{ await genImage(i); }catch(e){ errs.push(i+1); log("❌ "+e.message); } done++; upd(); if(done%5===0) saveProject(true); } }));
-  if(errs.length){ step("images","err",`${errs.length} fail`); throw new Fatal(`Scenes ${errs.join(", ")} ki image nahi bani. Storyboard me 🔄 dabao, phir render karo.`); }
-  step("images","done",`${total}/${total}`);
-}
-
-/* ===================== voice phase ===================== */
-async function voicePhase(){
-  step("voice","run");
-  let buf;
-  if(S.voiceFile){
-    buf = S.rawVoice || await decodeAudio(await S.voiceFile.arrayBuffer());
-  } else {
-    const bufs=[]; const n=S.scenes.length;
-    for(let i=0;i<n;i++){
-      step("voice","run",`AI voice ${i+1}/${n}`); setProgress(10+5*i/n,`AI voice ${i+1}/${n}`);
-      const s=S.scenes[i];
-      const j=await gemini($("mTts").value.trim(),()=>({contents:[{role:"user",parts:[{text:s.text,speech_metadata:{style:S.sheet?.voiceStyle||"engaging storytelling"}}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{voice:$("voiceName").value}}}}),`Voice ${i+1}`)
-        .catch(()=>gemini($("mTts").value.trim(),()=>({contents:[{parts:[{text:s.text}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:$("voiceName").value}}}}}),`Voice ${i+1}`));
-      const p=partsOf(j).find(p=>p.inline_data||p.inlineData); const d=p.inline_data||p.inlineData;
-      let bytes=unb64(d.data); if(String.fromCharCode(...bytes.slice(0,4))!=="RIFF") bytes=new Uint8Array(wavFromPcm(bytes));
-      bufs.push(await decodeAudio(bytes.buffer));
-    }
-    const sr=48000, gap=0.25, total=bufs.reduce((a,b)=>a+b.duration+gap,0);
-    const oc=new OfflineAudioContext(2,Math.ceil(total*sr),sr); let t=0;
-    bufs.forEach((b,i)=>{ const src=oc.createBufferSource(); src.buffer=b; src.connect(oc.destination); src.start(t); S.scenes[i].start=t; t+=b.duration+gap; S.scenes[i].end=t; });
-    buf=await oc.startRendering(); renderBoard();
-  }
-  if($("enh").checked){ step("voice","run","enhance"); buf=await enhance(buf); log("🎙️ Voice enhance ho gayi"); }
-  else buf=await toStereo48(buf);
-  S.voiceBuf=buf;
-  S.scenes[S.scenes.length-1].end=buf.duration;
-  step("voice","done",fmt(buf.duration));
-}
-
-/* ===================== render ===================== */
-const ease = x => x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
-function dims(){ const k=S.res==="4k"?2:1; return S.aspect==="16:9"?[1920*k,1080*k]:[1080*k,1920*k]; }
-const bmCache=new Map();
-async function bitmap(i,W,H){
-  if(bmCache.has(i)) return bmCache.get(i);
-  const s=S.scenes[i]; const sc=Math.max(W/s.w,H/s.h)*1.22;
-  const bm=await createImageBitmap(s.img,{resizeWidth:Math.round(s.w*sc),resizeHeight:Math.round(s.h*sc),resizeQuality:"high"});
-  bmCache.set(i,bm);
-  for(const k of [...bmCache.keys()]) if(k<i-1||k>i+2){ bmCache.get(k).close(); bmCache.delete(k); }
-  return bm;
-}
-// Ken Burns: har scene halka zoom + pan; edges hamesha crop (koi corner mark nahi dikhega)
-function drawKB(ctx,bm,i,lt,dur,W,H,alpha=1,extraZ=1,ox=0,oy=0){
-  const p=Math.max(0,Math.min(1,lt/dur)), zin=i%2===0;
-  const z=(zin?1.06+0.10*p:1.16-0.10*p)*extraZ;
-  const base=Math.max(W/bm.width,H/bm.height)*z, dw=bm.width*base, dh=bm.height*base;
-  const dir=[[1,0],[-1,0],[0,1],[0,-1]][i%4], room=[(dw-W)/2,(dh-H)/2];
-  const px=dir[0]*room[0]*0.6*(p-0.5)*2, py=dir[1]*room[1]*0.6*(p-0.5)*2;
-  ctx.globalAlpha=alpha; ctx.drawImage(bm,(W-dw)/2+px+ox,(H-dh)/2+py+oy,dw,dh); ctx.globalAlpha=1;
-}
-const TR=0.7;
-async function drawFrame(ctx,t,W,H){
-  const sc=S.scenes; let i=sc.findIndex(s=>t<s.end); if(i<0) i=sc.length-1;
-  const s=sc[i], A=await bitmap(i,W,H), dur=s.end-s.start+TR;
-  ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
-  const tIn=t-s.start; const nextT=s.end-t;
-  if(i<sc.length-1 && nextT<TR){
-    const B=await bitmap(i+1,W,H), n=sc[i+1], nd=n.end-n.start+TR, p=ease(1-nextT/TR), bl=TR-nextT, aT=tIn+(i>0?TR:0);
-    switch(s.trans){
-      case "slide": drawKB(ctx,A,i,aT,dur,W,H,1,1,-p*W,0); drawKB(ctx,B,i+1,bl,nd,W,H,1,1,(1-p)*W,0); break;
-      case "push":  drawKB(ctx,A,i,aT,dur,W,H,1,1,0,-p*H); drawKB(ctx,B,i+1,bl,nd,W,H,1,1,0,(1-p)*H); break;
-      case "zoom":  drawKB(ctx,B,i+1,bl,nd,W,H); drawKB(ctx,A,i,aT,dur,W,H,1-p,1+p*0.6); break;
-      case "circle":drawKB(ctx,A,i,aT,dur,W,H); ctx.save(); ctx.beginPath(); ctx.arc(W/2,H/2,p*Math.hypot(W,H)/2,0,7); ctx.clip(); drawKB(ctx,B,i+1,bl,nd,W,H); ctx.restore(); break;
-      default:      drawKB(ctx,A,i,aT,dur,W,H); drawKB(ctx,B,i+1,bl,nd,W,H,p);
-    }
-  } else drawKB(ctx,A,i,tIn+ (i>0?TR:0),dur,W,H);
-}
-
-async function pickVideoCodec(W,H){
-  const list = W*H>3e6 ? ["avc1.640034","avc1.640033","avc1.4d0034","avc1.4d0033","avc1.42e034"] : ["avc1.640028","avc1.4d0028","avc1.42e028","avc1.42e01f"];
-  for(const codec of list){ for(const hw of ["prefer-hardware","no-preference"]){ const cfg={codec,width:W,height:H,bitrate:W*H>3e6?40e6:14e6,framerate:30,hardwareAcceleration:hw,avc:{format:"avc"}}; try{ const r=await VideoEncoder.isConfigSupported(cfg); if(r.supported) return cfg; }catch(e){} } }
-  return null;
-}
-async function pickAudioCodec(){
-  for(const [codec,mux] of [["mp4a.40.2","aac"],["opus","opus"]]){ const cfg={codec,sampleRate:48000,numberOfChannels:2,bitrate:192000}; try{ const r=await AudioEncoder.isConfigSupported(cfg); if(r.supported) return [cfg,mux]; }catch(e){} }
-  return [null,null];
-}
-
-async function stepRender(){
-  await guard(async()=>{ if(!S.voiceBuf) await voicePhase(); await renderPhase(); });
-}
-async function renderPhase(){
-  if(!S.scenes.length || S.scenes.some(s=>!s.img)) throw new Fatal("Kuch scenes ki image baaki hai. Storyboard me 'Baaki images banao' dabao.");
-  if(!window.VideoEncoder || !window.AudioEncoder) return renderRealtime();
-  step("render","run"); showTab("export");
-  let [W,H]=dims(); let vcfg=await pickVideoCodec(W,H);
-  if(!vcfg && S.res==="4k"){ log("⚠️ Is phone par 4K encoder nahi mila — 1080p me bana rahe hain"); W/=2; H/=2; vcfg=await pickVideoCodec(W,H); }
-  if(!vcfg) return renderRealtime();
-  const [acfg,amux]=await pickAudioCodec(); if(!acfg) return renderRealtime();
-  const cv=$("cv"); cv.width=W; cv.height=H; const ctx=cv.getContext("2d",{alpha:false}); ctx.imageSmoothingQuality="high";
-  // output: phone storage (OPFS) me likho taaki lambi 4K video RAM me na bhare
-  let writable=null, fh=null, chain=Promise.resolve(), target;
-  try{ const root=await navigator.storage.getDirectory(); fh=await root.getFileHandle("stickman_video.mp4",{create:true}); writable=await fh.createWritable();
-    target=new Mp4Muxer.StreamTarget({onData:(data,pos)=>{ const c=data.slice(); chain=chain.then(()=>writable.write({type:"write",position:pos,data:c})); },chunked:true,chunkSize:16*1024*1024});
-  }catch(e){ log("Storage stream nahi mila, memory use karenge"); target=new Mp4Muxer.ArrayBufferTarget(); }
-  const muxer=new Mp4Muxer.Muxer({target,video:{codec:"avc",width:W,height:H,frameRate:30},audio:{codec:amux,numberOfChannels:2,sampleRate:48000},fastStart:false,firstTimestampBehavior:"offset"});
-  let encErr=null;
-  const ve=new VideoEncoder({output:(c,m)=>muxer.addVideoChunk(c,m),error:e=>encErr=e}); ve.configure(vcfg);
-  const ae=new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>encErr=e}); ae.configure(acfg);
-  const buf=S.voiceBuf, L=buf.getChannelData(0), R=buf.numberOfChannels>1?buf.getChannelData(1):L;
-  const fps=30, total=Math.ceil(buf.duration*fps), aStep=4800; let aPos=0;
-  await keepAwake(true); const t0=performance.now();
-  log(`🎞️ Render: ${W}x${H}, ${fmt(buf.duration)}, ${S.scenes.length} scenes`);
-  for(let f=0; f<total; f++){
-    if(encErr) throw encErr;
-    const t=f/fps;
-    await drawFrame(ctx,t,W,H);
-    const vf=new VideoFrame(cv,{timestamp:Math.round(t*1e6),duration:Math.round(1e6/fps)});
-    ve.encode(vf,{keyFrame:f%60===0}); vf.close();
-    while(aPos<L.length && aPos/48000 < t+1){ const n=Math.min(aStep,L.length-aPos); const d=new Float32Array(n*2); d.set(L.subarray(aPos,aPos+n),0); d.set(R.subarray(aPos,aPos+n),n);
-      const ad=new AudioData({format:"f32-planar",sampleRate:48000,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(aPos/48000*1e6),data:d}); ae.encode(ad); ad.close(); aPos+=n; }
-    while(ve.encodeQueueSize>4) await sleep(4);
-    if(f%15===0){ const pct=f/total, el=(performance.now()-t0)/1000, eta=pct>0.01?el/pct-el:0; setProgress(70+29*pct,`Render ${Math.floor(pct*100)}%`); step("render","run",`${Math.floor(pct*100)}% • ~${fmt(eta)} baaki`); await sleep(0); }
-  }
-  while(aPos<L.length){ const n=Math.min(aStep,L.length-aPos); const d=new Float32Array(n*2); d.set(L.subarray(aPos,aPos+n),0); d.set(R.subarray(aPos,aPos+n),n); const ad=new AudioData({format:"f32-planar",sampleRate:48000,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(aPos/48000*1e6),data:d}); ae.encode(ad); ad.close(); aPos+=n; }
-  await ve.flush(); await ae.flush(); muxer.finalize(); ve.close(); ae.close();
-  let blob;
-  if(writable){ await chain; await writable.close(); blob=await fh.getFile(); } else blob=new Blob([target.buffer],{type:"video/mp4"});
-  await keepAwake(false); bmCache.forEach(b=>b.close()); bmCache.clear();
-  finish(blob,"mp4",`${W}x${H}`);
-}
-// fallback: purane browsers ke liye real-time recording
-async function renderRealtime(){
-  step("render","run","real-time mode"); showTab("export"); log("⚠️ WebCodecs nahi mila — real-time recording (video jitni lambi, utna time)");
-  let [W,H]=dims(); if(S.res==="4k"){ W/=2; H/=2; log("Real-time mode me 1080p"); }
-  const cv=$("cv"); cv.width=W; cv.height=H; const ctx=cv.getContext("2d");
-  const ac=new AudioContext({sampleRate:48000}); const dest=ac.createMediaStreamDestination(); const src=ac.createBufferSource(); src.buffer=S.voiceBuf; src.connect(dest);
-  const stream=new MediaStream([...cv.captureStream(30).getVideoTracks(),...dest.stream.getAudioTracks()]);
-  const mime=["video/mp4;codecs=avc1,mp4a","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(m=>MediaRecorder.isTypeSupported(m));
-  const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:12e6}); const chunks=[]; rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
-  await keepAwake(true); await drawFrame(ctx,0,W,H); rec.start(1000); const st=ac.currentTime+0.1; src.start(st);
-  const D=S.voiceBuf.duration;
-  await new Promise(res=>{ const loop=async()=>{ const t=ac.currentTime-st; if(t>=D){ res(); return;} await drawFrame(ctx,Math.max(0,t),W,H); setProgress(70+29*t/D,`Recording ${Math.floor(t/D*100)}%`); step("render","run",`${Math.floor(t/D*100)}%`); requestAnimationFrame(loop); }; loop(); });
-  rec.stop(); await new Promise(r=>rec.onstop=r); ac.close(); await keepAwake(false);
-  finish(new Blob(chunks,{type:mime}),mime.includes("mp4")?"mp4":"webm",`${W}x${H}`);
-}
-function finish(blob,ext,res){
-  const url=URL.createObjectURL(blob); $("outVid").src=url; $("outVid").style.display="block";
-  const name=`${(S.sheet?.title||"stickman_video").replace(/[^\w\u0900-\u097F]+/g,"_").slice(0,40)}_${res}.${ext}`;
-  $("dlBox").innerHTML=`<a class="dl" href="${url}" download="${name}">⬇️ Video download (${(blob.size/1e6).toFixed(0)} MB)</a>`;
-  $("expInfo").textContent=`Ready: ${res}, ${fmt(S.voiceBuf.duration)}`;
-  step("render","done"); step("done","done",res); setProgress(100,"✅ Video ready!"); log("✅ Final video ready: "+name);
-}
-
-/* ===================== full auto pipeline ===================== */
-async function runAll(){
-  await guard(async()=>{
-    showTab("flow");
-    if(!S.keys.length) await saveKeys(false);
-    step("keys", S.keys.length?"done":"err", S.keys.length+" key");
-    S.voiceBuf=null;
-    await stepAnalyse();
-    await voicePhase(); setProgress(15,"Voice ready");
-    await imagesPhase();
-    await renderPhase();
-  });
-}
-async function guard(fn){
-  if(S.busy) return alert("Ek kaam already chal raha hai — Workflow tab dekho.");
-  S.busy=true;
-  try{ await fn(); }
-  catch(e){ console.error(e); log("❌ "+e.message); const run=Object.keys(stepState).find(k=>stepState[k].st==="run"); if(run) step(run,"err"); setProgress(+$("ppct").textContent.replace("%",""),"❌ Ruk gaya — log dekho"); alert(e.message); }
-  finally{ S.busy=false; keepAwake(false); }
-}
-
-/* ===================== project save (IndexedDB) ===================== */
-function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open("stickman_studio",1); r.onupgradeneeded=()=>r.result.createObjectStore("p"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-async function saveProject(silent){
-  try{ const db=await idb(); const data={sheet:S.sheet,aspect:S.aspect,res:S.res,refs:S.refs,bg:S.bg,script:$("script").value,scenes:S.scenes.map(s=>({...s,url:null}))};
-    await new Promise((res,rej)=>{ const tx=db.transaction("p","readwrite"); tx.objectStore("p").put(data,"last"); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); });
-    if(!silent) alert("Project save ho gaya"); }catch(e){ log("Save fail: "+e.message); }
-}
-async function loadProject(){
-  const db=await idb(); const d=await new Promise(res=>{ const r=db.transaction("p").objectStore("p").get("last"); r.onsuccess=()=>res(r.result); });
-  if(!d) return alert("Koi saved project nahi mila");
-  Object.assign(S,{sheet:d.sheet,aspect:d.aspect,res:d.res,refs:d.refs||[],bg:d.bg,voiceBuf:null}); $("script").value=d.script||"";
-  S.scenes=d.scenes.map(s=>({...s,url:s.img?URL.createObjectURL(s.img):null}));
-  renderBoard(); showTab("board"); log(`Project khula: ${S.scenes.length} scenes. Voice dobara upload karo agar apni voice thi.`);
-}
-if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
